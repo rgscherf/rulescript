@@ -8,7 +8,8 @@
     (remove-ns 'evalrules)
     (create-ns 'evalrules)
     (in-ns 'evalrules)
-    (use 'rulescript.lang.main)
+    (use 'rulescript.lang.invocations)
+    (use 'rulescript.lang.operations)
     (def env* (clojure.core/atom {}))))
 
 (defmacro validate-document

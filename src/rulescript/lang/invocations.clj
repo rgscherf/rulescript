@@ -1,24 +1,35 @@
 (ns rulescript.lang.invocations
   (:require [rulescript.lang.utils :refer :all]))
 
-
-(defn reset-ns
+(defn initialize-eval-env
   []
   (do
+    (def env* (clojure.core/atom {:initial-ns *ns*
+                                  :results    {}
+                                  :vars       {}}))
     (remove-ns 'evalrules)
     (create-ns 'evalrules)
     (in-ns 'evalrules)
     (use 'rulescript.lang.invocations)
     (use 'rulescript.lang.operations)
-    (def env* (clojure.core/atom {}))))
+    ))
+
+(defn return-to-calling-ns
+  []
+  (-> (:initial-ns @env*)
+      ns-name
+      in-ns))
 
 (defmacro validate-document
   "Top-level macro for rolling up the result of all rule applications."
   [[& inputs] & expressions]
   `(fn
      [~@inputs]
-     (reset-ns)
-     ~expressions
+     (initialize-eval-env)
+     ~@expressions
+     (return-to-calling-ns)
+     @env*
+
      ))
 
 
@@ -36,21 +47,30 @@
   (-> name
       (clojure.string/split #"-")
       (interleave (repeat " "))
-      (clojure.string/join)))
+      clojure.string/join
+      clojure.string/trim))
+
+(defmacro log-application-result
+  [result-map]
+  `(swap! env*
+          update-in
+          [:results (:result ~result-map)]
+          conj
+          ~result-map))
 
 (defmacro tag-rule-application
   "Wrap the application of a rule with structured rule output."
   [rule-name expressions]
-  `(println (try
-              (let [result# (if (map? ~expressions)
-                              (:result ~expressions)
-                              (if ~expressions :pass :fail))]
-                {:result result#
-                 :rule   (stringify-fn (str ~rule-name))})
-              (catch Exception e# {:result  :error
-                                   :rule    (stringify-fn (str ~rule-name))
-                                   :message (.getMessage e#)}))))
-
+  `(log-application-result
+     (try
+       (let [result# (if (map? ~expressions)
+                       (:result ~expressions)
+                       (if ~expressions :pass :fail))]
+         {:result result#
+          :rule   (stringify-fn (str ~rule-name))})
+       (catch Exception e# {:result  :error
+                            :rule    (stringify-fn (str ~rule-name))
+                            :message (.getMessage e#)}))))
 
 ;;;;;;;;;;;;;;;;;
 ;; Defining and applying rules
@@ -60,27 +80,24 @@
   "Define a rule. Rules are closures expecting the arguments from arglist."
   [rule-name arglist & expressions]
   `(swap! env*
-          assoc
-          (symbol->keyword '~rule-name)
+          assoc-in
+          [:vars (symbol->keyword '~rule-name)]
           (fn
             [~@arglist]
             ~@expressions)))
 
 (defmacro apply-rule-inner
-  [rule-name _ & args]
-  `(println (keys (deref 'env*)))
-
-  #_((get env*
-          (symbol->keyword ~rule-name))
-      (into [] (if (= 1 (count '~args))
-                 '~args
-                 (flatten '~args)))))
+  [rule-name & args]
+  `(do
+     ((get-in (deref env*)
+              [:vars (symbol->keyword '~rule-name)])
+       ~@args)))
 
 (defmacro apply-rule
   "Apply a rule that has been defined."
-  [rule-name _ & args]
-  `(tag-rule-application ~rule-name
-                         (apply-rule-inner ~rule-name 'to ~@args)))
+  [rule-name & args]
+  `(tag-rule-application '~rule-name
+                         (apply-rule-inner ~rule-name ~@args)))
 
 
 ;;;;;;;;;;;;;;;;;

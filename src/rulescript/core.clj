@@ -11,8 +11,15 @@
 (def inspec
   '(validate-document
      (in)
-     (rule city-must-be-victoria
-           (is-complete in))))
+     (rule is-map-complete?
+           (is-complete in))
+     (define-rule remember-complete
+                  (app)
+                  (is-complete app))
 
-((eval inspec) inmap)
+     (apply-rule remember-complete in)
+     ))
 
+(def va
+  ((eval inspec) inmap))
+va

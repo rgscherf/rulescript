@@ -29,7 +29,6 @@
      ~@expressions
      (return-to-calling-ns)
      @env*
-
      ))
 
 
@@ -44,10 +43,10 @@
 
 (defn stringify-fn
   [name]
-  (-> name
-      (clojure.string/split #"-")
-      (interleave (repeat " "))
-      clojure.string/join
+  (->>
+      (clojure.string/split name #"-")
+      (map clojure.string/capitalize)
+      (clojure.string/join " ")
       clojure.string/trim))
 
 (defmacro log-application-result

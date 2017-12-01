@@ -1,0 +1,109 @@
+html {
+    color: black;
+    font-family: "Roboto", "Source Sans Pro", sans-serif;
+}
+
+body {
+    font-size: 20px;
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 1000px;
+}
+
+.code {
+    margin-left: 40px;
+}
+
+.codeAlign {
+    margin-left: 60px;
+}
+
+.primaryHighlight {
+    color: #2BFF88;
+}
+
+.secondaryHighlight {
+    color: #FBDA61;
+}
+
+.headline {
+    text-align: center;
+}
+
+.headline__primary {
+    font-size: 6.1rem;
+    font-family: 'Nixie One', cursive;
+    margin-bottom: 5px;
+}
+
+.headline__logline {
+    font-size: 1.5rem;
+}
+
+#headContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-around;
+    margin-top: 4.5rem;
+    margin-bottom: 3rem;
+}
+
+#headContainer__code {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+}
+
+.gradient {
+    background-color: #FA8BFF;
+    background-image: linear-gradient(45deg, #FA8BFF 0%, #2BD2FF 52%, #2BFF88 90%);
+}
+
+.skew-neg {
+    border-radius: 5px;
+    -webkit-transform: skewY(-5deg);
+    -moz-transform: skewY(-5deg);
+    -ms-transform: skewY(-5deg);
+    -o-transform: skewY(-5deg);
+    transform: skewY(-5deg);
+    padding: 60px;
+    padding-top: 50px;
+    margin-top: 60px;
+    top: -100px;
+}
+
+.skew-pos {
+    -webkit-transform: skewY(5deg);
+    -moz-transform: skewY(5deg);
+    -ms-transform: skewY(5deg);
+    -o-transform: skewY(5deg);
+    transform: skewY(5deg);
+}
+
+.features {
+    max-width: 85%;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 2rem;
+}
+
+.features__headline {
+    font-size: 1.7rem;
+    font-family: 'Nixie One', cursive;
+    margin-bottom: 20px;
+}
+
+.features__body {
+    margin-bottom: 30px;
+}
+
+.features__section {
+    margin-bottom: 50px;
+}
+
+.features__sectionHead {
+    font-size: 3rem;
+    padding-top: 0.5em;
+    margin-bottom: 1em;
+}

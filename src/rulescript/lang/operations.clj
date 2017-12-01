@@ -10,6 +10,10 @@
 (def no false)
 (def not-ok false)
 
+(def pass :pass)
+(def fail :fail)
+(def warn :warn)
+
 ;; clojure.core predicate synonyms
 
 (def is-true true?)
@@ -19,6 +23,7 @@
 (def is true?)
 (def is-not false?)
 (def equal =)
+
 
 ;; other clojure.core synonyms
 

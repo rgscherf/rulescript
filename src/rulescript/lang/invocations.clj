@@ -1,24 +1,32 @@
 (ns rulescript.lang.invocations
-  (:require [rulescript.lang.utils :refer :all]))
+  (:require
+    [clojure.string :as string]
+    [rulescript.lang.utils :refer :all]))
 
 (defn initialize-eval-env
+  "Set up execution evironment for rule evaluation."
   []
-  (do
-    (def env* (clojure.core/atom {:initial-ns *ns*
-                                  :results    {}
-                                  :vars       {}}))
-    (remove-ns 'evalrules)
-    (create-ns 'evalrules)
-    (in-ns 'evalrules)
-    (use 'rulescript.lang.invocations)
-    (use 'rulescript.lang.operations)
-    ))
+  (let [initial-ns *ns*]
+    (do
+      (remove-ns 'evalrules)
+      (create-ns 'evalrules)
+      (in-ns 'evalrules)
+      (def env* (clojure.core/atom {:initial-ns initial-ns
+                                    :results    {}
+                                    :vars       {}}))
+      (use 'rulescript.lang.invocations)
+      (use 'rulescript.lang.operations))))
 
 (defn return-to-calling-ns
+  "Remove current ns and return to initial evaluation ns."
   []
-  (-> (:initial-ns @env*)
-      ns-name
-      in-ns))
+  (do
+    (let [environment# @env*]
+      (-> (:initial-ns @env*)
+          ns-name
+          in-ns)
+      (remove-ns 'evalrules)
+      environment#)))
 
 (defmacro validate-document
   "Top-level macro for rolling up the result of all rule applications."
@@ -27,9 +35,7 @@
      [~@inputs]
      (initialize-eval-env)
      ~@expressions
-     (return-to-calling-ns)
-     @env*
-     ))
+     (return-to-calling-ns)))
 
 
 ;;;;;;;;;;;;;;;;;
@@ -42,38 +48,40 @@
           :rule   "rule name"})
 
 (defn stringify-fn
+  "Render a fn's name as a string."
   [name]
   (->>
-      (clojure.string/split name #"-")
-      (map clojure.string/capitalize)
-      (clojure.string/join " ")
-      clojure.string/trim))
+    (string/split name #"-")
+    (map string/capitalize)
+    (string/join " ")
+    string/trim))
 
-(defmacro log-application-result
+(defmacro log-application-result!
+  "Associate the result of an application in the :results map of env*."
   [result-map]
-  `(swap! env*
-          update-in
-          [:results (:result ~result-map)]
-          conj
-          ~result-map))
+  `(do (swap! env*
+              assoc-in
+              [:results (:rule ~result-map)]
+              ~result-map)
+       ~result-map))
 
-(defmacro tag-rule-application
+(defmacro application->result-map
   "Wrap the application of a rule with structured rule output."
   [rule-name expressions]
-  `(log-application-result
+  `(log-application-result!
      (try
        (let [result# (if (map? ~expressions)
                        (:result ~expressions)
                        (if ~expressions :pass :fail))]
          {:result result#
-          :rule   (stringify-fn (str ~rule-name))})
+          :rule   (symbol->keyword ~rule-name)})
        (catch Exception e# {:result  :error
-                            :rule    (stringify-fn (str ~rule-name))
+                            :rule    (symbol->keyword ~rule-name)
                             :message (.getMessage e#)}))))
 
-;;;;;;;;;;;;;;;;;
-;; Defining and applying rules
-;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;
+;; RULE DEFINITION
+;;;;;;;;;;;;;;;;;;
 
 (defmacro define-rule
   "Define a rule. Rules are closures expecting the arguments from arglist."
@@ -85,26 +93,30 @@
             [~@arglist]
             ~@expressions)))
 
+;;;;;;;;;;;;;;;;;;;
+;; RULE APPLICATION
+;;;;;;;;;;;;;;;;;;;
+
+(defmacro apply-rule*
+  "Pass a rule and its expressions off to be tagged in env*"
+  [application-method rule-name & expressions]
+  `(application->result-map ~rule-name (~application-method ~rule-name ~@expressions)))
+
 (defmacro apply-rule-inner
+  "Get a fn by rule-name from the vars map, and apply it to args"
   [rule-name & args]
   `(do
      ((get-in (deref env*)
-              [:vars (symbol->keyword '~rule-name)])
+              [:vars (symbol->keyword ~rule-name)])
        ~@args)))
 
 (defmacro apply-rule
   "Apply a rule that has been defined."
-  [rule-name & args]
-  `(tag-rule-application '~rule-name
-                         (apply-rule-inner ~rule-name ~@args)))
-
-
-;;;;;;;;;;;;;;;;;
-;; Apply a rule anonymously,
-;; without defining a var for it.
-;;;;;;;;;;;;;;;;;
+  [rule-name & expressions]
+  `(apply-rule* 'apply-rule-inner '~rule-name '~@expressions))
 
 (defmacro rule-inner
+  "Execute expressions."
   [rule-name & expressions]
   `(do
      ~@expressions))
@@ -112,22 +124,24 @@
 (defmacro rule
   "Execute a rule anonymously without variable bindings."
   [rule-name & expressions]
-  `(tag-rule-application '~rule-name
-                         (rule-inner ~rule-name ~@expressions)))
+  `(apply-rule* 'rule-inner '~rule-name ~@expressions))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; PROMOTE/DEMOTE RESULTS TO WARNING
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;;;;;;;;;;;;;;;;;
-;; Warnings
-;;;;;;;;;;;;;;;;;
+(defn change-result!
+  "Change an entry in the :results map of env*"
+  [rule-name-kw new-map]
+  (swap!
+    env*
+    assoc-in
+    [:results rule-name-kw]
+    new-map))
 
-(defn warn-if
-  "Demote a 'passng' rule to a warning.
-  Can only be used on result maps (e.g. when `rule` or `apply-rule` has been applied."
-  [result-map]
-  (if (not (map? result-map))
-    {:result :error :rule "ERROR! warn-if should only be applied to rule or apply-rule."}
-    (if (= :pass (:result result-map))
-      (assoc result-map :result :warn)
-      result-map)))
-
-
+(defn warn-when
+  "If the change a result map's :result to :warn if it matches a given value."
+  [warning-val {:keys [rule result] :as result-map}]
+  (if (= warning-val result)
+    (change-result! rule (assoc result-map :result :warn))
+    result-map))

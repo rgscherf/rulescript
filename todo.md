@@ -2,8 +2,6 @@
 
 ## Website
 
-- Copy
-- Basic design
 - Executable specs (see compiler)
 - Example specs
   - Reimplement DRAO

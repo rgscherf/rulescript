@@ -1,6 +1,5 @@
 (ns rulescript.lang.invocations
   (:require
-    [clojure.string :as string]
     [rulescript.lang.utils :refer :all]))
 
 (defn initialize-eval-env
@@ -47,15 +46,6 @@
 #_(after tagging, each rule application should return a result of shape
          {:result (:pass | :fail | :warn | :error)
           :rule   "rule name"})
-
-(defn stringify-fn
-  "Render a fn's name as a string."
-  [name]
-  (->>
-    (string/split name #"-")
-    (map string/capitalize)
-    (string/join " ")
-    string/trim))
 
 (defmacro log-application-result!
   "Associate the result of an application in the :results map of env*."

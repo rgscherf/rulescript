@@ -8,14 +8,14 @@
   []
   (let [initial-ns *ns*]
     (do
-      (remove-ns 'evalrules)
-      (create-ns 'evalrules)
-      (in-ns 'evalrules)
+      ;(remove-ns 'evalrules)
+      ;(create-ns 'evalrules)
+      ;(in-ns 'evalrules)
+      ;(use 'rs-site.rulescript.lang.invocations)
+      ;(use 'rs-site.rulescript.lang.operations)
       (def env* (clojure.core/atom {:initial-ns initial-ns
                                     :results    {}
-                                    :vars       {}}))
-      (use 'rulescript.lang.invocations)
-      (use 'rulescript.lang.operations))))
+                                    :vars       {}})))))
 
 (defn return-to-calling-ns
   "Remove current ns and return to initial evaluation ns."
@@ -35,7 +35,8 @@
      [~@inputs]
      (initialize-eval-env)
      ~@expressions
-     (return-to-calling-ns)))
+     (let [res# (:results @env*)]
+       res#)))
 
 
 ;;;;;;;;;;;;;;;;;
@@ -145,3 +146,4 @@
   (if (= warning-val result)
     (change-result! rule (assoc result-map :result :warn))
     result-map))
+

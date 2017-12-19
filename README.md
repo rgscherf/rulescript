@@ -25,7 +25,11 @@ In both cases, the eval fn evaluates an input document against a spec and return
 
 ### Command line
 
-Clone this repository and run `lein uberjar`. Then, 
+Clone this repository and run 
+
+`export LEIN_SNAPSHOTS_IN_RELEASE=override; lein uberjar`
+
+Then,
 
 `java -jar rulescript.jar input-spec input-document :pprint true`
 

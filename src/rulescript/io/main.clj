@@ -1,5 +1,6 @@
 (ns rulescript.io.main
   (:require
+    [rulescript.lang.utils :refer :all]
     [clojure.edn :as edn]
     [clojure.java.io :as io]
     [cheshire.core :as cheshire])

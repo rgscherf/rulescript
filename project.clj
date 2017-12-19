@@ -4,6 +4,7 @@
   :license {:name "MIT"
             :url  "https://opensource.org/licenses/MIT"}
   :main rulescript.core
+  :aot [rulescript.core]
   :dependencies [
                  [org.clojure/clojure "1.9.0"]
                  [cheshire "5.8.0"]

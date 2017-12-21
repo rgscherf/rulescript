@@ -18,8 +18,6 @@
 
 (def is-true true?)
 (def is-false false?)
-(def every every?)
-(def not-every not-every?)
 (def is true?)
 (def is-not false?)
 (def equal =)
@@ -29,16 +27,12 @@
 
 (def combine partial)
 
-(defmacro all
-  [pred & forms]
-  `(every? ~pred ~@forms))
-
 (def sum +)
 (def product *)
 
 ;; original predicates
 
-(defn is-complete
+(defn complete?
   [input-map]
   (->> input-map
        (map second)
@@ -76,11 +70,17 @@
      (= "find" (str '~verb))
      (get-in ~data
              (mapv symbol->keyword '~fields))
-     (= "find-each" (str '~verb))
-     (map #(get-in ~data (mapv symbol->keyword
-                               (if (list? %)
-                                 %
-                                 (list %))))
-          '~fields)))
+     (= "extract" (str '~verb))
+     (map #(get-in %
+                   (mapv symbol->keyword '~fields))
+          ~data)))
+
+(defn all?
+  [bools]
+  (every? true? bools))
+
+(defn none?
+  [bools]
+  (not (all? bools)))
 
 

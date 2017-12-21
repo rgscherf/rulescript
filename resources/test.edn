@@ -1,1 +1,41 @@
-( )
+(validate-document (input)
+
+  (rule
+    is-current-libary-member
+    (= true (in input find current-member)))
+
+  (rule
+    application-is-for-renewal
+    (= "Library Card Renewal" (in input find type-of-application)))
+
+  (rule
+    renewed-fewer-than-10-times
+    (< (in input find times-renewed) 10))
+
+  (rule
+    applicant-lives-in-library-region
+    (and
+      (= "Hamilton" (in input find address city))
+      (= "Ontario" (in input find address province))))
+
+  (rule
+    has-no-overdue-books
+    (none?
+      (in (in input find checkouts) extract overdue)))
+
+  (rule
+    owes-less-than-ten-dollars-in-fines
+    (> 10.0
+      (+
+        (in input find old-fines)
+        (reduce +
+          (in (in input find checkouts) extract fines)))))
+
+  (warn-when false
+    (rule
+      owes-less-than-two-dollars-in-fines
+      (> 2.0
+        (+
+          (in input find old-fines)
+          (reduce +
+            (in (in input find checkouts) extract fines)))))))

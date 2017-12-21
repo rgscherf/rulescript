@@ -133,7 +133,13 @@
 (defn warn-when
   "If the change a result map's :result to :warn if it matches a given value."
   [warning-val {:keys [rule result] :as result-map}]
-  (if (= warning-val result)
-    (change-result! rule (assoc result-map :result :warn))
-    result-map))
+  (let [result-as-bool (= :pass result)
+        with-warning (assoc result-map :result :warn)]
+    (if (= warning-val result-as-bool)
+      (do
+        (try
+          (change-result! rule with-warning)
+          (catch ClassCastException e (println (.getMessage e))))
+        with-warning)
+      result-map)))
 

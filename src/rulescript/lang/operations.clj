@@ -81,6 +81,6 @@
 
 (defn none?
   [bools]
-  (not (all? bools)))
+  (every? false? bools))
 
 

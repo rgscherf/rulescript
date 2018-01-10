@@ -25,7 +25,15 @@ In both cases, the eval fn evaluates an input document against a spec and return
 
 ### Command line
 
-Clone this repository and run 
+You must enable JVM sandboxing in order to use RuleScript on your desktop. It's easy: just copy the following contents to `~/.java.policy`:
+
+```
+grant {
+  permission java.security.AllPermission;
+};
+```
+
+Then, clone this repository and run:
 
 `export LEIN_SNAPSHOTS_IN_RELEASE=override; lein uberjar`
 

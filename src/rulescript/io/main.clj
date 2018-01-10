@@ -1,5 +1,6 @@
 (ns rulescript.io.main
   (:require
+    [rulescript.io.sandbox :as sandbox]
     [rulescript.lang.utils :refer :all]
     [clojure.edn :as edn]
     [clojure.java.io :as io]
@@ -92,11 +93,15 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn- eval-strings
-  "Evaluate a rulescript spec and input, passed as strings."
+  "Evaluate a rulescript spec and input, passed as strings.
+  Disallows certain symbols, defined in ns rulescript.io.sandbox"
   [spec input]
   (let [read-input (cheshire/parse-string input true)
-        read-spec (edn/read-string spec)]
-    ((eval read-spec) read-input)))
+        read-spec (try (sandbox/rs-sandbox (edn/read-string spec))
+                       (catch java.lang.SecurityException e (throw e))
+                       (catch java.util.concurrent.ExecutionException e (edn/read-string spec)))
+        evaled  (eval read-spec)]
+    (evaled read-input)))
 
 (defn eval-from-strings
   [spec input & {:keys [pprint]}]
@@ -104,7 +109,6 @@
     (if pprint
       (pprint-results output)
       output)))
-
 
 (comment
   (let [testgroup {:age-over-ten      {:rule :age-over-ten, :result :fail}
@@ -117,6 +121,8 @@
     (pprint-results testgroup)))
 
 (comment
+  (use 'rulescript.lang.invocations)
+  (use 'rulescript.lang.operations)
   (eval-from-strings
     "(validate-document (inp) (rule i-fail (< 2 (in inp find fail))) (rule is-hello (= 1 (in inp find age))) (rule age-over-ten (> 10 (in inp find age))))"
     "{\"age\":12}"

@@ -96,9 +96,9 @@
 
   (warn-when
     true
-    (rule applicationlying-for-special-provisions
-      (is-true
-        (in application find applicationlyingForSpecialProvisions))))
+    (rule
+      applying-for-special-provisions
+      (in application find applicationlyingForSpecialProvisions)))
 
   ;(rule non-homeowner-applicationlication-is-eligible
   ;  (conditional on (in application find applicationType)

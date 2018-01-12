@@ -64,3 +64,8 @@
 ((eval spec) drao-app)
 
 
+
+
+(complete? [:a :b :c])
+(complete? '(:a :b :c))
+(complete? #{:a :b :c})

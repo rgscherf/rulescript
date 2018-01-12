@@ -14,28 +14,23 @@
 (def fail :fail)
 (def warn :warn)
 
-(defn- notnil [in] (not= nil in))
 ;; complete? multimethod
 (defmulti complete? (fn [x] (type x)))
+
+(defn- notnil [in] (not= nil in))
 (defmethod complete? nil [_] false)
 (defmethod complete? clojure.lang.Keyword [_] true)
 (defmethod complete? java.lang.String [input] (not= "" input))
 (defmethod complete? java.lang.Boolean [input] (notnil input))
 (defmethod complete? java.lang.Double [input] (notnil input))
 (defmethod complete? java.lang.Long [input] (notnil input))
-(defmethod complete? clojure.lang.PersistentHashMap
-  [input]
+(defmethod complete? clojure.lang.APersistentSet [input] (every? complete? input))
+(defmethod complete? clojure.lang.APersistentVector [input] (every? complete? input))
+(defmethod complete? clojure.lang.ASeq [input] (every? complete? input))
+(defmethod complete? clojure.lang.APersistentMap [input]
   (->> input
        (map second)
        (every? complete?)))
-(defmethod complete? clojure.lang.PersistentArrayMap
-  [input]
-  (->> input
-       (map second)
-       (every? complete?)))
-(defmethod complete? clojure.lang.PersistentVector
-  [input]
-  (every? complete? input))
 
 ;; combining macros
 

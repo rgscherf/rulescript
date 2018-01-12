@@ -1,0 +1,136 @@
+;; RuleScript spec for Disaster Recovery Assistance for Ontarians
+;; https://ontario.ca/DisasterAssistance
+
+;; This file is for demonstration purposes only.
+;; Contact the Government of Ontario for information about this program.
+
+(validate-document
+
+  (application)
+
+  ;(define-rule
+  ;  address-is-within-disaster
+  ;  (affected-mun mailing-address damaged-property)
+  ;  (conditional on affected-mun
+  ;    mailing-address yes
+  ;    damaged-property yes
+  ;    else no))
+
+  ;(define-rule
+  ;  business-and-farm-eligibility
+  ;  (business)
+  ;  (and
+  ;    (is-complete business)
+  ;    (all is-true (in business find-each
+  ;                   manager
+  ;                   businessIsLivlihood
+  ;                   businessInEarningsWindow))))
+  ;
+  ;(define-rule
+  ;  not-for-profit-eligibility
+  ;  (nonprofit)
+  ;  (and
+  ;    (is-complete nonprofit)
+  ;    (all is-true (in nonprofit find-each
+  ;                   providesCommunityService
+  ;                   usesProfitsForObjectives))))
+  ;
+  ;(define-rule
+  ;  each-expense-is-complete
+  ;  (& cost-categories)
+  ;  (all is-complete cost-categories))
+  ;
+  ;(define-rule
+  ;  total-expenses-greater-than-deductible
+  ;  (applicationlying-for-special-provisions all-evacuation-expenses all-emergency-costs all-repair-costs)
+  ;  (conditional
+  ;    on applicationlying-for-special-provisions
+  ;    false (< 500 (reduce sum
+  ;                   (reduce sum (extract-from-list amount (in all-evacuation-expenses find expenses)))
+  ;                   (reduce sum (extract-from-list amount (in all-emergency-costs find expenses)))
+  ;                   (reduce sum (extract-from-list amount (in all-repair-costs find expenses)))))
+  ;    else true))
+
+
+  (rule mandatory-sections-filled
+    (all?
+      (map complete?
+        (in application extract
+          applicationlicantInfo
+          applicationType
+          insurance))))
+
+  ;(applicationly-rule
+  ;  address-is-within-disaster
+  ;  to
+  ;  (flatten
+  ;    ("Toronto")
+  ;    (in application find-each
+  ;      (applicationlicantInfo mailingAddress)
+  ;      (applicationlicantInfo damagedProperty))))
+
+  (warn-when
+    true
+    (rule
+      litigation-initiatied
+      (in application find applicationlicantInfo litigation)))
+
+  (warn-when
+    false
+    (rule
+      mandatory-fields-complete
+      (every? complete?
+        (in application find-each
+          (damagedProperty actionsTaken)
+          (damagedProperty description)))))
+
+  (rule
+    insurance-information-is-complete
+    (complete? (in application find insurance)))
+
+  (warn-when
+    true
+    (rule
+      outside-assistance-provided
+      (in application find outsideAssistance provided)))
+
+  (warn-when
+    true
+    (rule applicationlying-for-special-provisions
+      (is-true
+        (in application find applicationlyingForSpecialProvisions))))
+
+  ;(rule non-homeowner-applicationlication-is-eligible
+  ;  (conditional on (in application find applicationType)
+  ;    "smallBusiness" (apply-rule
+  ;                      business-and-farm-eligibility
+  ;                      to (in application find smallBusinessApplication))
+  ;    "farm" (apply-rule
+  ;             business-and-farm-eligibility
+  ;             to (in application find farmApplication))
+  ;    "notForProfit" (apply-rule
+  ;                     not-for-profit-eligibility
+  ;                     to (in application find notForProfitApplication))
+  ;    else false))
+
+  (rule declaration-is-complete
+    (complete?
+      (in application find declaration)))
+
+  )
+
+;(applicationly-rule
+;  total-expenses-greater-than-deductible
+;  to (in application find-each
+;       applicationlyingForSpecialProvisions
+;       emergencyEvacuationExpenses
+;       emergencyCleanupExpenses
+;       repairAndReplacementExpenses))
+
+;(applicationly-rule
+;  each-expense-is-complete
+;  to (in application find-each
+;       (emergencyEvacuationExpenses expenses)
+;       (emergencyCleanupExpenses expenses)
+;       (repairAndReplacementExpenses expenses)))
+

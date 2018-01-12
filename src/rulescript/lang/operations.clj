@@ -14,30 +14,28 @@
 (def fail :fail)
 (def warn :warn)
 
-;; clojure.core predicate synonyms
-
-(def is-true true?)
-(def is-false false?)
-(def is true?)
-(def is-not false?)
-(def equal =)
-
-
-;; other clojure.core synonyms
-
-(def combine partial)
-
-(def sum +)
-(def product *)
-
-;; original predicates
-
-(defn complete?
-  [input-map]
-  (->> input-map
+(defn- notnil [in] (not= nil in))
+;; complete? multimethod
+(defmulti complete? (fn [x] (type x)))
+(defmethod complete? nil [_] false)
+(defmethod complete? clojure.lang.Keyword [_] true)
+(defmethod complete? java.lang.String [input] (not= "" input))
+(defmethod complete? java.lang.Boolean [input] (notnil input))
+(defmethod complete? java.lang.Double [input] (notnil input))
+(defmethod complete? java.lang.Long [input] (notnil input))
+(defmethod complete? clojure.lang.PersistentHashMap
+  [input]
+  (->> input
        (map second)
-       (every? #(and (not (= % ""))
-                     (not (nil? %))))))
+       (every? complete?)))
+(defmethod complete? clojure.lang.PersistentArrayMap
+  [input]
+  (->> input
+       (map second)
+       (every? complete?)))
+(defmethod complete? clojure.lang.PersistentVector
+  [input]
+  (every? complete? input))
 
 ;; combining macros
 
@@ -46,10 +44,6 @@
   `(->> ~elements
         (map ~fn)
         (every? ~existence)))
-
-(defmacro extract-from-list
-  [symb-key lst]
-  `(map (symbol->keyword '~symb-key) ~lst))
 
 (defmacro conditional
   "Match test with a number of paired clauses.
@@ -60,16 +54,26 @@
 (defmacro in
   "Retrieve data from a map. Symbols in fields are converted to keyword keys.
   if verb is 'get', dive through the map as get-in.
-  if verb is 'get-each', return each argument as if filtering map elements.
-  in a get-each, you can dive through the map for certin elements by enclosing them in a list.
-  (from data get foo bar) => (get-in data [:foo :bar])
-  (from data get-each foo bar) => (map (partial get data) [:foo :bar])
-  (from data get-each foo (bar baz) => '((get data :foo), (get-in data [:bar baz]))"
+  if verb is 'find-each', return each location from the map. a location can be given as a sequence, in which case the sequence acts like a get-in on the map.
+  if verb is 'extract', return the same location from each element of a sequence.
+  (from data get foo bar)          => (get-in data [:foo :bar])
+  (from data get-in (foo bar) baz) => (map #(get-in data %) '([:foo :bar] [:baz]) )
+  (from data extract foo bar)      => (map #(get-in % [:foo :bar]) data)"
   [data verb & fields]
   `(cond
      (= "find" (str '~verb))
      (get-in ~data
              (mapv symbol->keyword '~fields))
+
+     (= "find-each" (str '~verb))
+     (map (fn [element#]
+            (get-in ~data element#))
+          (map (fn [field-form#]
+                 (if (seq? field-form#)
+                   (into [] (map symbol->keyword field-form#))
+                   [(symbol->keyword field-form#)]))
+               '~fields))
+
      (= "extract" (str '~verb))
      (map #(get-in %
                    (mapv symbol->keyword '~fields))

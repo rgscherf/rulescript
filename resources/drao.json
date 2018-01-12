@@ -1,0 +1,132 @@
+{
+    "disasterName": "tester",
+    "totalAmountRequested": 95000,
+    "applicationType": "homeowner",
+    "applicantInfo": {
+        "lastName": "",
+        "firstname": "",
+        "positionTitle": "",
+        "businessName": "",
+        "mailingAddress": {
+            "unit": "",
+            "streetNumber": "",
+            "streetName": "",
+            "city": "",
+            "province": "",
+            "postal": "",
+            "homePhone": "",
+            "workPhone": "",
+            "email": ""
+        },
+        "residents": {
+            "adults": 0,
+            "children": 0,
+            "infants": 0
+        }
+    },
+    "litigation": false,
+    "damagedProperty": {
+        "address": {
+            "unit": "",
+            "streetNumber": "",
+            "streetName": "",
+            "city": "",
+            "province": "",
+            "postal": ""
+        },
+        "cause": "",
+        "actionsTaken": "",
+        "description": ""
+    },
+    "insurance": {
+        "isPropertyInsured": false,
+        "policyNo": "",
+        "insuranceCompany": "",
+        "insuranceBroker": "",
+        "telephoneNo": "",
+        "dateNotified": "",
+        "actionsTaken": "",
+        "reportProvided": false,
+        "insuranceSignature": true,
+        "insruanceSignatureDate": ""
+    },
+    "outsideAssistance": {
+        "provided": false,
+        "nameOfProvider": "",
+        "natureOfAssistance": "",
+        "dollarValue": 0
+    },
+    "applyingForSpecialProvisions": true,
+    "smallBusinessApplication": {
+        "manager": false,
+        "businessIsLivelihood": false,
+        "businessInEarningsWindow": false,
+        "fewerThanTwentyOneEmployees": false,
+        "businessName": "Robertson's RVs",
+        "HSTNumber": "",
+        "corpNumber": "88778"
+    },
+    "farmApplication": {
+        "manager": false,
+        "businessIsLivelihood": false,
+        "businessInEarningsWindow": false,
+        "fewerThanTwentyOneEmployees": false,
+        "farmRegistrationNumber": ""
+    },
+    "notForProfitApplication": {
+        "providesCommunityService": false,
+        "usesProfitsForObjectives": false,
+        "legalName": "",
+        "charityNumber": ""
+    },
+    "declaration": {
+        "signature": false,
+        "dateSigned": "I was signed"
+    },
+    "emergencyEvacuationExpenses": {
+        "didEvacuateFromHome": false,
+        "didPayForEmergencyAccommodations": false,
+        "dateBegunAccommodations": "",
+        "dateEndedAccommodations": "",
+        "expenses": [ {
+            "date": "",
+            "description": "",
+            "documentation": "",
+            "amount": 1900
+        }, {
+            "date": "",
+            "description": "",
+            "documentation": "",
+            "amount": 1900
+        } ]
+    },
+    "emergencyCleanupExpenses": {
+        "didIncurExpenses": false,
+        "expenses": [ {
+            "date": "",
+            "description": "",
+            "documentation": "",
+            "amount": 1900
+        }, {
+            "date": "",
+            "description": "",
+            "documentation": "",
+            "amount": 1900
+        } ]
+    },
+    "repairAndReplacementExpenses": {
+        "didSumpPumpBackUp": false,
+        "description": "",
+        "expenses": [ {
+            "date": "",
+            "description": "",
+            "documentation": "",
+            "amount": 1900
+        }, {
+            "date": "",
+            "description": "",
+            "documentation": "",
+            "amount": 1900
+        } ]
+    }
+}

@@ -15,22 +15,28 @@
 (def warn :warn)
 
 ;; complete? multimethod
+
 (defmulti complete? (fn [x] (type x)))
 
+(defn- complete-seq [input]
+  (and (-> input empty? not)
+       (every? complete? input)))
 (defn- notnil [in] (not= nil in))
+
 (defmethod complete? nil [_] false)
 (defmethod complete? clojure.lang.Keyword [_] true)
 (defmethod complete? java.lang.String [input] (not= "" input))
 (defmethod complete? java.lang.Boolean [input] (notnil input))
 (defmethod complete? java.lang.Double [input] (notnil input))
 (defmethod complete? java.lang.Long [input] (notnil input))
-(defmethod complete? clojure.lang.APersistentSet [input] (every? complete? input))
-(defmethod complete? clojure.lang.APersistentVector [input] (every? complete? input))
-(defmethod complete? clojure.lang.ASeq [input] (every? complete? input))
+(defmethod complete? clojure.lang.APersistentSet [input] (complete-seq input))
+(defmethod complete? clojure.lang.APersistentVector [input] (complete-seq input))
+(defmethod complete? clojure.lang.ASeq [input] (complete-seq input))
 (defmethod complete? clojure.lang.APersistentMap [input]
-  (->> input
-       (map second)
-       (every? complete?)))
+  (and (-> input empty? not)
+       (->> input
+            (map second)
+            (every? complete?))))
 
 ;; combining macros
 
@@ -51,9 +57,9 @@
   if verb is 'get', dive through the map as get-in.
   if verb is 'find-each', return each location from the map. a location can be given as a sequence, in which case the sequence acts like a get-in on the map.
   if verb is 'extract', return the same location from each element of a sequence.
-  (from data get foo bar)          => (get-in data [:foo :bar])
-  (from data get-in (foo bar) baz) => (map #(get-in data %) '([:foo :bar] [:baz]) )
-  (from data extract foo bar)      => (map #(get-in % [:foo :bar]) data)"
+  (in data find foo bar)            => (get-in data [:foo :bar])
+  (in data find-each (foo bar) baz) => (map #(get-in data %) '([:foo :bar] [:baz]) )
+  (in data extract foo bar)         => (map #(get-in % [:foo :bar]) data)"
   [data verb & fields]
   `(cond
      (= "find" (str '~verb))
@@ -61,13 +67,13 @@
              (mapv symbol->keyword '~fields))
 
      (= "find-each" (str '~verb))
-     (map (fn [element#]
-            (get-in ~data element#))
-          (map (fn [field-form#]
-                 (if (seq? field-form#)
-                   (into [] (map symbol->keyword field-form#))
-                   [(symbol->keyword field-form#)]))
-               '~fields))
+     (into []
+           (map (partial get-in ~data)
+                (map (fn [field-form#]
+                       (if (seq? field-form#)
+                         (into [] (map symbol->keyword field-form#))
+                         [(symbol->keyword field-form#)]))
+                     '~fields)))
 
      (= "extract" (str '~verb))
      (map #(get-in %
@@ -76,10 +82,10 @@
 
 (defn all?
   [bools]
-  (every? true? bools))
+  (and (-> bools nil? not)
+       (every? true? bools)))
 
 (defn none?
   [bools]
-  (every? false? bools))
-
-
+  (and (-> bools nil? not)
+       (every? false? bools)))

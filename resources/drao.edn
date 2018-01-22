@@ -1,0 +1,131 @@
+;; RuleScript spec for Disaster Recovery Assistance for Ontarians (DRAO)
+;; https://ontario.ca/DisasterAssistance
+;; This file and the example input follow the application form which can be found
+;; at http://www.mah.gov.on.ca/AssetFactory.aspx?did=19719
+
+;; This file is for demonstration purposes only.
+;; Contact the Government of Ontario for information about this program.
+
+(validate-document
+
+  (application)
+
+  (rule
+    disaster-name-matches-current-program
+    (= "Huntsville Flood" (in application find disasterName)))
+
+  (rule
+    property-is-within-disaster-area
+    (if
+      ;; if the "damage property" section has been filled (e.g. the damaged property
+      ;; is not at the applicant's mailing address)
+      (complete? (in application find damagedProperty address))
+      ;; then...
+      (and
+        (= "Huntsville" (in application find damagedProperty address city))
+        (= "Ontario" (in application find damagedProperty address province)))
+      ;; otherwise...
+      (and
+        (= "Huntsville" (in application find applicantInfo mailingAddress city))
+        (= "Ontario" (in application find applicantInfo mailingAddress province)))))
+
+  (rule
+    mandatory-sections-of-application-are-filled
+    (every? complete? (in application find-each
+                        disasterName
+                        totalAmountRequested
+                        applicantInfo
+                        insurance
+                        declaration)))
+
+  (warn-when
+    false
+    (rule
+      litigation-not-initiated
+      (not (in application find litigation))))
+
+  (warn-when
+    false
+    (rule
+      outside-assistance-has-not-been-provided
+      (not (in application find outsideAssistance provided))))
+
+  (warn-when
+    false
+    (rule
+      not-applying-for-special-provisions
+      (not (in application find applyingForSpecialProvisions))))
+
+  (rule
+    expenses-equal-total-request
+    (= (in application find totalAmountRequested)
+      (reduce +
+        (map :amount
+          (flatten
+            (in
+              (in application find-each
+                emergencyEvacuationExpenses
+                emergencyCleanupExpenses
+                repairAndReplacementExpenses)
+              extract expenses))))))
+
+  (rule
+    expenses-greater-than-deductible
+    (if (in application find applyingForSpecialProvisions)
+      ;; no deductible if applicant is applying for special provisions
+      true
+      ;; if not, total expenses must be > $500
+      (< 500
+        (reduce +
+          (map :amount
+            (flatten
+              (in
+                (in application find-each
+                  emergencyEvacuationExpenses
+                  emergencyCleanupExpenses
+                  repairAndReplacementExpenses)
+                extract expenses)))))))
+
+  (rule
+    each-expense-is-complete
+    (every? complete?
+      (flatten
+        (in
+          (in application find-each
+            emergencyEvacuationExpenses
+            emergencyCleanupExpenses
+            repairAndReplacementExpenses)
+          extract expenses))))
+
+  (rule
+    special-eligibility-rules
+    (conditional on (in application find applicationType)
+      "homeowner" true
+      "smallBusiness" (and
+                        (complete? (in application find smallBusinessApplication))
+                        (all? (in
+                                (in application find smallBusinessApplication) find-each
+                                manager
+                                businessIsLivelihood
+                                businessInEarningsWindow
+                                fewerThanTwentyOneEmployees
+                                )))
+      "farm" (and
+               (complete? (in application find farmApplication))
+               (all? (in
+                       (in application find farmApplication) find-each
+                       manager
+                       businessIsLivelihood
+                       businessInEarningsWindow
+                       fewerThanTwentyOneEmployees
+                       )))
+      "notForProfit" (and
+                       (complete? (in application find notForProfitApplication))
+                       (all? (in
+                               (in application find notForProfitApplication) find-each
+                               providesCommunityService
+                               usesProfitsForObjectives)))))
+  )
+
+
+

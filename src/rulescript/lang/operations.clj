@@ -29,6 +29,7 @@
 (defmethod complete? java.lang.Boolean [input] (notnil input))
 (defmethod complete? java.lang.Double [input] (notnil input))
 (defmethod complete? java.lang.Long [input] (notnil input))
+(defmethod complete? java.lang.Integer [input] (notnil input))
 (defmethod complete? clojure.lang.APersistentSet [input] (complete-seq input))
 (defmethod complete? clojure.lang.APersistentVector [input] (complete-seq input))
 (defmethod complete? clojure.lang.ASeq [input] (complete-seq input))

@@ -19,7 +19,7 @@
      :overdue overdue
      :fines   fines})
 
-  (def application
+  (def library-application
     {:type-of-application "Library Card Renewal"
      :name                "Harold Harnold"
      :address             {:city     "Hamilton"
@@ -50,23 +50,23 @@
 
                            ]})
 
-  (def drao-app
+  (def application
     (-> "drao.json"
         jio/resource
         slurp
         (cheshire/parse-string keyword)))
 
   (def spec
-    (-> "drao-full.edn"
+    (-> "drao.edn"
         jio/resource
         slurp
         edn/read-string))
 
-  ((eval spec) drao-app)
+  ((eval spec) application)
 
 
 
 
-  (complete? [:a :b :c])
-  (complete? '(:a :b :c))
-  (complete? #{:a :b :c}))
+
+  )
+

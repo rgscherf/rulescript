@@ -1,132 +1,152 @@
 {
-    "disasterName": "tester",
-    "totalAmountRequested": 95000,
-    "applicationType": "homeowner",
-    "applicantInfo": {
-        "lastName": "",
-        "firstname": "",
-        "positionTitle": "",
-        "businessName": "",
-        "mailingAddress": {
-            "unit": "",
-            "streetNumber": "",
-            "streetName": "",
-            "city": "",
-            "province": "",
-            "postal": "",
-            "homePhone": "",
-            "workPhone": "",
-            "email": ""
-        },
-        "residents": {
-            "adults": 0,
-            "children": 0,
-            "infants": 0
-        }
+  "disasterName": "Huntsville Flood",
+  "totalAmountRequested": 10080,
+  "applicationType": "homeowner",
+  "applicantInfo": {
+    "lastName": "Harnold",
+    "firstname": "Beatrice",
+    "positionTitle": "Ms",
+    "businessName": "None",
+    "mailingAddress": {
+      "unit": "1",
+      "streetNumber": "13",
+      "streetName": "Minerva St",
+      "city": "Huntsville",
+      "province": "Ontario",
+      "postal": "P1H 1P2",
+      "homePhone": "705-789-1751",
+      "workPhone": "705-962-2351",
+      "email": "bharnold@huntsville.ca"
     },
-    "litigation": false,
-    "damagedProperty": {
-        "address": {
-            "unit": "",
-            "streetNumber": "",
-            "streetName": "",
-            "city": "",
-            "province": "",
-            "postal": ""
-        },
-        "cause": "",
-        "actionsTaken": "",
-        "description": ""
-    },
-    "insurance": {
-        "isPropertyInsured": false,
-        "policyNo": "",
-        "insuranceCompany": "",
-        "insuranceBroker": "",
-        "telephoneNo": "",
-        "dateNotified": "",
-        "actionsTaken": "",
-        "reportProvided": false,
-        "insuranceSignature": true,
-        "insruanceSignatureDate": ""
-    },
-    "outsideAssistance": {
-        "provided": false,
-        "nameOfProvider": "",
-        "natureOfAssistance": "",
-        "dollarValue": 0
-    },
-    "applyingForSpecialProvisions": true,
-    "smallBusinessApplication": {
-        "manager": false,
-        "businessIsLivelihood": false,
-        "businessInEarningsWindow": false,
-        "fewerThanTwentyOneEmployees": false,
-        "businessName": "Robertson's RVs",
-        "HSTNumber": "",
-        "corpNumber": "88778"
-    },
-    "farmApplication": {
-        "manager": false,
-        "businessIsLivelihood": false,
-        "businessInEarningsWindow": false,
-        "fewerThanTwentyOneEmployees": false,
-        "farmRegistrationNumber": ""
-    },
-    "notForProfitApplication": {
-        "providesCommunityService": false,
-        "usesProfitsForObjectives": false,
-        "legalName": "",
-        "charityNumber": ""
-    },
-    "declaration": {
-        "signature": false,
-        "dateSigned": "I was signed"
-    },
-    "emergencyEvacuationExpenses": {
-        "didEvacuateFromHome": false,
-        "didPayForEmergencyAccommodations": false,
-        "dateBegunAccommodations": "",
-        "dateEndedAccommodations": "",
-        "expenses": [ {
-            "date": "",
-            "description": "",
-            "documentation": "",
-            "amount": 1900
-        }, {
-            "date": "",
-            "description": "",
-            "documentation": "",
-            "amount": 1900
-        } ]
-    },
-    "emergencyCleanupExpenses": {
-        "didIncurExpenses": false,
-        "expenses": [ {
-            "date": "",
-            "description": "",
-            "documentation": "",
-            "amount": 1900
-        }, {
-            "date": "",
-            "description": "",
-            "documentation": "",
-            "amount": 1900
-        } ]
-    },
-    "repairAndReplacementExpenses": {
-        "didSumpPumpBackUp": false,
-        "description": "",
-        "expenses": [ {
-            "date": "",
-            "description": "",
-            "documentation": "",
-            "amount": 1900
-        }, {
-            "date": "",
-            "description": "",
-            "documentation": "",
-            "amount": 1900
-        } ]
+    "residents": {
+      "adults": 2,
+      "children": 0,
+      "infants": 0
     }
+  },
+  "litigation": false,
+  "damagedProperty": {
+    "address": {
+      "unit": "1",
+      "streetNumber": "13",
+      "streetName": "Minerva St",
+      "city": "Huntsville",
+      "province": "Ontario",
+      "postal": "P1H 1P2"
+    },
+    "cause": "Flood water",
+    "actionsTaken": "Cleared and cleaned basement. Rented industrial fans. Purchased replacement furniture and appliances.",
+    "description": "Hockey gear, clothes, washer/dryer, interior/exterior walls."
+  },
+  "insurance": {
+    "isPropertyInsured": true,
+    "policyNo": "898786657",
+    "insuranceCompany": "RBC",
+    "insuranceBroker": "Alyssa P Hacker",
+    "telephoneNo": "705-443-7854",
+    "dateNotified": "2017-04-01",
+    "actionsTaken": "Adjuster sent, claim filed.",
+    "reportProvided": true,
+    "insuranceSignature": true,
+    "insruanceSignatureDate": "2017-06-04"
+  },
+  "outsideAssistance": {
+    "provided": false,
+    "nameOfProvider": "",
+    "natureOfAssistance": "",
+    "dollarValue": 0
+  },
+  "applyingForSpecialProvisions": false,
+  "smallBusinessApplication": {
+    "manager": false,
+    "businessIsLivelihood": false,
+    "businessInEarningsWindow": false,
+    "fewerThanTwentyOneEmployees": false,
+    "businessName": "Robertson's RVs",
+    "HSTNumber": "",
+    "corpNumber": "88778"
+  },
+  "farmApplication": {
+    "manager": false,
+    "businessIsLivelihood": false,
+    "businessInEarningsWindow": false,
+    "fewerThanTwentyOneEmployees": false,
+    "farmRegistrationNumber": ""
+  },
+  "notForProfitApplication": {
+    "providesCommunityService": false,
+    "usesProfitsForObjectives": false,
+    "legalName": "",
+    "charityNumber": ""
+  },
+  "declaration": {
+    "signature": true,
+    "dateSigned": "2017-06-06"
+  },
+  "emergencyEvacuationExpenses": {
+    "didEvacuateFromHome": false,
+    "didPayForEmergencyAccommodations": false,
+    "dateBegunAccommodations": "",
+    "dateEndedAccommodations": "",
+    "expenses": []
+  },
+  "emergencyCleanupExpenses": {
+    "didIncurExpenses": true,
+    "expenses": [
+      {
+        "date": "2017-04-03",
+        "description": "Fan rental",
+        "documentation": "Receipt - Page 3",
+        "amount": 500
+      },
+      {
+        "date": "2017-04-04",
+        "description": "cleanup labour",
+        "documentation": "invoice - page 4",
+        "amount": 200
+      },
+      {
+        "date": "2017-04-05",
+        "description": "cleanup labour",
+        "documentation": "invoice - page 5",
+        "amount": 200
+      },
+      {
+        "date": "2017-04-06",
+        "description": "cleanup labour",
+        "documentation": "invoice - page 6",
+        "amount": 200
+      }
+    ]
+  },
+  "repairAndReplacementExpenses": {
+    "didSumpPumpBackUp": false,
+    "description": "",
+    "expenses": [
+      {
+        "date": "2017-05-01",
+        "description": "New washer/dryer",
+        "documentation": "Receipt - page 7",
+        "amount": 2500
+      },
+      {
+        "date": "2017-05-03",
+        "description": "New lacrosse gear",
+        "documentation": "Receipt - page 7",
+        "amount": 350
+      },
+      {
+        "date": "2017-05-05",
+        "description": "New clothing/jackets",
+        "documentation": "Receipt - page 8",
+        "amount": 700
+      },
+      {
+        "date": "2017-05-03",
+        "description": "Wall repair",
+        "documentation": "Invoice - page 10",
+        "amount": 5430
+      }
+    ]
+  }
 }

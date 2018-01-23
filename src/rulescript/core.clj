@@ -9,10 +9,8 @@
 (def eval-from-files rulescript-io/eval-from-files)
 
 (defn -main
-  [spec-name input-name & others]
-  (eval-from-files spec-name input-name))
+  [[spec-name input-name & {:keys [pprint] :or {pprint true}}]]
+  (eval-from-files spec-name input-name :pprint pprint))
 
-(comment
-  (eval-from-files "./resources/drao" "./resources/drao" :pprint true))
 
 

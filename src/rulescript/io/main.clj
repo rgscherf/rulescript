@@ -66,14 +66,14 @@
              (str "." extension))]
     (io/reader (str filename xt))))
 
-(defn- get-document
+(defn- read-json-file
   "Read a JSON document by its name (excluding file extension)."
   ;; TODO graceful error handling when the file is not found.
   [doc-name]
   (cheshire/parse-stream (reader-from-str doc-name "json")
                          true))
 
-(defn- get-rulespec
+(defn- read-rulescript-file
   "Read a named spec file (without file extension) into memory. The file still needs to be eval'd."
   ;; TODO graceful error handling when the file is not found.
   [spec-name]
@@ -81,39 +81,42 @@
     (with-open [in (PushbackReader. spec-resource)]
       (edn/read {:eof :eof} in))))
 
-(defn eval-from-files
-  [specname inputname & {:keys [pprint] :or {pprint true}}]
-  (let [input (get-document inputname)
-        spec (try (sandbox/rs-sandbox (get-rulespec specname))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;
+;; EVALUATING RULESCRIPTS
+;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn- eval-rules*
+  "Evaluate a rulescript spec and input. Source is either :string or :file.
+  Disallows certain symbols, defined in ns rulescript.io.sandbox"
+  [specname inputname source]
+  (let [input (if (= source :strings)
+                (cheshire/parse-string inputname true)
+                (read-json-file inputname))
+        spec (try (sandbox/rs-sandbox (if (= source :strings)
+                                        (edn/read-string specname)
+                                        (read-rulescript-file specname)))
                   (catch java.lang.SecurityException e (throw e))
-                  (catch java.util.concurrent.ExecutionException e (get-rulespec specname)))
-        output ((eval spec) input)]
+                  (catch java.util.concurrent.ExecutionException e (if (= source :strings)
+                                                                     (edn/read-string specname)
+                                                                     (read-rulescript-file specname))))]
+    ((eval spec) input)))
+
+(defn eval-rules
+  [spec input & {:keys [pprint source] :or {pprint true source :file}}]
+  (let [output (eval-rules* spec input source)]
     (if pprint
       (pprint-results output)
       (cheshire/generate-string output))))
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; EVALUATING RULESCRIPTS FROM STRINGS
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defn- eval-strings
-  "Evaluate a rulescript spec and input, passed as strings.
-  Disallows certain symbols, defined in ns rulescript.io.sandbox"
-  [spec input & {:keys [pprint] :or {pprint true}}]
-  (let [read-input (cheshire/parse-string input true)
-        read-spec (try (sandbox/rs-sandbox (edn/read-string spec))
-                       (catch java.lang.SecurityException e (throw e))
-                       (catch java.util.concurrent.ExecutionException e (edn/read-string spec)))
-        evaled (eval read-spec)]
-    (evaled read-input)))
-
 (defn eval-from-strings
-  [spec input & {:keys [pprint]}]
-  (let [output (eval-strings spec input)]
-    (if pprint
-      (pprint-results output)
-      output)))
+  [spec input & {:keys [pprint] :or {pprint true}}]
+  (eval-rules spec input :pprint pprint :source :strings))
+
+(defn eval-from-files
+  [spec input & {:keys [pprint] :or {pprint true}}]
+  (eval-rules spec input :pprint pprint :source :files))
 
 
 (comment
@@ -129,7 +132,8 @@
 (comment
   (use 'rulescript.lang.invocations)
   (use 'rulescript.lang.operations)
+  (eval-from-files "./resources/drao" "./resources/drao" :pprint true))
   (eval-from-strings
     "(validate-document (inp) (rule i-fail (< 2 (in inp find fail))) (rule is-hello (= 1 (in inp find age))) (rule age-over-ten (> 10 (in inp find age))))"
     "{\"age\":12}"
-    :pprint true))
+    :pprint true)

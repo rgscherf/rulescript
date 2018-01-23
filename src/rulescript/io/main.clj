@@ -4,6 +4,7 @@
     [rulescript.lang.utils :refer :all]
     [clojure.edn :as edn]
     [clojure.java.io :as io]
+    [clojure.string :as string]
     [cheshire.core :as cheshire])
   (:import (java.io PushbackReader)
            (java.text SimpleDateFormat)
@@ -35,7 +36,7 @@
   [result-str]
   (let [datestr (-> (SimpleDateFormat. "y-MM-dd h:mm:ss a z")
                     (.format (Date.)))]
-    (str "Result generated " datestr "\n" result-str)) )
+    (str "Result generated " datestr "\n" result-str)))
 
 (defn- pprint-results
   "Pretty print the results of a rulescript evaluation."
@@ -50,7 +51,8 @@
          (map print-result-class)
          (map #(str % "\n"))
          (reduce str "")
-         add-timestamp)))
+         add-timestamp
+         string/trimr)))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -62,18 +64,16 @@
   (let [xt (if (clojure.string/starts-with? extension ".")
              extension
              (str "." extension))]
-    (-> (#(str "poli/" filename xt))
-        io/resource
-        io/reader)))
+    (io/reader (str filename xt))))
 
 (defn- get-document
   "Read a JSON document by its name (excluding file extension)."
   ;; TODO graceful error handling when the file is not found.
   [doc-name]
   (cheshire/parse-stream (reader-from-str doc-name "json")
-                true))
+                         true))
 
-(defn- get-polispec
+(defn- get-rulespec
   "Read a named spec file (without file extension) into memory. The file still needs to be eval'd."
   ;; TODO graceful error handling when the file is not found.
   [spec-name]
@@ -82,10 +82,15 @@
       (edn/read {:eof :eof} in))))
 
 (defn eval-from-files
-  [specname inputname & {:keys [pprint]}]
+  [specname inputname & {:keys [pprint] :or {pprint true}}]
   (let [input (get-document inputname)
-        spec (get-polispec specname)]
-    ((eval spec) input)))
+        spec (try (sandbox/rs-sandbox (get-rulespec specname))
+                  (catch java.lang.SecurityException e (throw e))
+                  (catch java.util.concurrent.ExecutionException e (get-rulespec specname)))
+        output ((eval spec) input)]
+    (if pprint
+      (pprint-results output)
+      (cheshire/generate-string output))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -95,12 +100,12 @@
 (defn- eval-strings
   "Evaluate a rulescript spec and input, passed as strings.
   Disallows certain symbols, defined in ns rulescript.io.sandbox"
-  [spec input]
+  [spec input & {:keys [pprint] :or {pprint true}}]
   (let [read-input (cheshire/parse-string input true)
         read-spec (try (sandbox/rs-sandbox (edn/read-string spec))
                        (catch java.lang.SecurityException e (throw e))
                        (catch java.util.concurrent.ExecutionException e (edn/read-string spec)))
-        evaled  (eval read-spec)]
+        evaled (eval read-spec)]
     (evaled read-input)))
 
 (defn eval-from-strings
@@ -109,6 +114,7 @@
     (if pprint
       (pprint-results output)
       output)))
+
 
 (comment
   (let [testgroup {:age-over-ten      {:rule :age-over-ten, :result :fail}

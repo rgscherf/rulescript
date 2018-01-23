@@ -12,4 +12,7 @@
   [spec-name input-name & others]
   (eval-from-files spec-name input-name))
 
+(comment
+  (eval-from-files "./resources/drao" "./resources/drao" :pprint true))
+
 

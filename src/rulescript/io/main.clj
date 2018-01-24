@@ -8,7 +8,8 @@
     [cheshire.core :as cheshire])
   (:import (java.io PushbackReader)
            (java.text SimpleDateFormat)
-           (java.util Date)))
+           (java.util Date)
+           (java.util.concurrent TimeoutException)))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -89,7 +90,7 @@
 (defn- eval-rules*
   "Evaluate a rulescript spec and input. Source is either :string or :file.
   Disallows certain symbols, defined in ns rulescript.io.sandbox"
-  [specname inputname source]
+  [specname inputname source & {:keys [timeout]}]
   (let [input (if (= source :strings)
                 (cheshire/parse-string inputname true)
                 (read-json-file inputname))
@@ -100,23 +101,37 @@
                   (catch java.util.concurrent.ExecutionException e (if (= source :strings)
                                                                      (edn/read-string specname)
                                                                      (read-rulescript-file specname))))]
-    @(future
-       ((eval spec) input))))
+    (deref
+      (future
+        ((eval spec) input))
+      timeout
+      :too-long)))
 
-(defn eval-rules
-  [spec input & {:keys [pprint source]}]
-  (let [output (eval-rules* spec input source)]
+(defn- make-timeout
+  [timeout-val]
+  (java.io.IOException.
+    (str "Your specification took too long to evaluate (> "
+         (double (/ timeout-val 1000))
+         " seconds)")))
+
+(defn- eval-rules
+  [spec input & {:keys [pprint source timeout]}]
+  (let [output (eval-rules* spec input source :timeout timeout)]
+    (if (= output :too-long) (throw (make-timeout timeout)))
     (if pprint
       (pprint-results output)
       (cheshire/generate-string output))))
 
+;; Default exefution timeout.
+(def default-timeout 5000)
+
 (defn eval-from-strings
-  [spec input & {:keys [pprint] :or {pprint true}}]
-  (eval-rules spec input :pprint pprint :source :strings))
+  [spec input & {:keys [pprint timeout] :or {pprint true timeout default-timeout}}]
+  (eval-rules spec input :pprint pprint :source :strings :timeout timeout))
 
 (defn eval-from-files
-  [spec input & {:keys [pprint printonly] :or {pprint true printonly false}}]
-  (let [result (eval-rules spec input :pprint pprint :source :files)]
+  [spec input & {:keys [pprint printonly timeout] :or {pprint true printonly false timeout default-timeout}}]
+  (let [result (eval-rules spec input :pprint pprint :source :files :timeout timeout)]
     (if printonly
       (println result)
       result)))
@@ -138,8 +153,8 @@
   (let [spec (read-rulescript-file "./resources/drao")
         application (read-json-file "./resources/drao")]
     (pprint-results ((eval spec) application)))
-   (eval-from-files "./resources/drao" "./resources/drao" :pprint true)
-   (eval-from-strings
-           "(validate-document (inp) (rule i-fail (< 2 (in inp find fail))) (rule is-hello (= 1 (in inp find age))) (rule age-over-ten (> 10 (in inp find age))))"
-           "{\"age\":12}"
-           :pprint true))
+  (eval-from-files "./resources/drao" "./resources/drao" :pprint true)
+  (eval-from-strings
+    "(validate-document (inp) (rule i-fail (< 2 (in inp find fail))) (rule is-hello (= 1 (in inp find age))) (rule age-over-ten (> 10 (in inp find age))))"
+    "{\"age\":12}"
+    :pprint true))

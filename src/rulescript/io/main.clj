@@ -6,10 +6,10 @@
     [clojure.java.io :as io]
     [clojure.string :as string]
     [cheshire.core :as cheshire])
-  (:import (java.io PushbackReader IOException)
+  (:import (java.io PushbackReader)
            (java.text SimpleDateFormat)
            (java.util Date)
-           (java.util.concurrent TimeoutException)))
+           (java.util.concurrent TimeoutException ExecutionException)))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -56,9 +56,19 @@
          string/trimr)))
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; EVALUATING RULESCRIPTS FROM FILES
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; DEFAULT EVALUATION OPTIONS
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(def default-opts
+  {:pprint    true
+   :timeout   5000
+   :printonly false})
+
+
+;;;;;;;;;
+;; IO OPS
+;;;;;;;;;
 
 (defn- reader-from-str
   [filename extension]
@@ -90,51 +100,51 @@
 (defn- eval-rules*
   "Evaluate a rulescript spec and input. Source is either :string or :file.
   Disallows certain symbols, defined in ns rulescript.io.sandbox"
-  [specname inputname source & {:keys [timeout]}]
+  [{:keys [source]} specname inputname]
   (let [input (if (= source :strings)
                 (cheshire/parse-string inputname true)
                 (read-json-file inputname))
         spec (try (sandbox/rs-sandbox (if (= source :strings)
                                         (edn/read-string specname)
                                         (read-rulescript-file specname)))
-                  (catch java.lang.SecurityException e (throw e))
-                  (catch java.util.concurrent.ExecutionException e (if (= source :strings)
-                                                                     (edn/read-string specname)
-                                                                     (read-rulescript-file specname))))]
-    (deref
-      (future
-        ((eval spec) input))
-      timeout
-      :too-long)))
-
-(defn- make-timeout
-  [timeout-val]
-  (IOException.
-    (str "Your specification took too long to evaluate (> "
-         (double (/ timeout-val 1000))
-         " seconds)")))
+                  (catch SecurityException e (throw e))
+                  (catch ExecutionException e (if (= source :strings)
+                                                (edn/read-string specname)
+                                                (read-rulescript-file specname))))]
+    ((eval spec) input)))
 
 (defn- eval-rules
-  [spec input & {:keys [pprint source timeout]}]
-  (let [output (eval-rules* spec input source :timeout timeout)]
-    (if (= output :too-long) (throw (make-timeout timeout)))
+  "Outer evaluation, controlling eval timeout and printing of results."
+  [{:keys [pprint timeout] :as opts} spec input]
+  (let [output (deref
+                 (future
+                   (eval-rules* opts spec input))
+                 timeout
+                 :too-long)]
+    (if (= output :too-long) (throw (timeout-exception timeout)))
     (if pprint
       (pprint-results output)
       (cheshire/generate-string output))))
 
-;; Default exefution timeout.
-(def default-timeout 5000)
-
 (defn eval-from-strings
-  [spec input & {:keys [pprint timeout] :or {pprint true timeout default-timeout}}]
-  (eval-rules spec input :pprint pprint :source :strings :timeout timeout))
+  "Evaluate RuleScript with string inputs. Can take an option map as first argument. See default-opts in this NS."
+  ([spec input]
+   (eval-from-strings {} spec input))
+  ([opts spec input]
+   (eval-rules (merge-ignore-nil default-opts opts {:source :strings})
+               spec
+               input)))
 
 (defn eval-from-files
-  [spec input & {:keys [pprint printonly timeout] :or {pprint true printonly false timeout default-timeout}}]
-  (let [result (eval-rules spec input :pprint pprint :source :files :timeout timeout)]
-    (if printonly
-      (println result)
-      result)))
+  "Evaluate RuleScript with file path inputs. Can take an option map as first argument. See default-opts in this NS."
+  ([spec input]
+   (eval-from-files {} spec input))
+  ([opts spec input]
+   (let [eval-opts (merge-ignore-nil default-opts opts {:source :files})
+         result (eval-rules eval-opts spec input)]
+     (if (:printonly opts)
+       (println result)
+       result))))
 
 
 (comment
@@ -153,8 +163,8 @@
   (let [spec (read-rulescript-file "./resources/drao")
         application (read-json-file "./resources/drao")]
     (pprint-results ((eval spec) application)))
-  (eval-from-files "./resources/drao" "./resources/drao" :pprint true)
+  (eval-from-files "./resources/drao" "./resources/drao")
   (eval-from-strings
     "(validate-document (inp) (rule i-fail (< 2 (in inp find fail))) (rule is-hello (= 1 (in inp find age))) (rule age-over-ten (> 10 (in inp find age))))"
     "{\"age\":12}"
-    :pprint true))
+    ))

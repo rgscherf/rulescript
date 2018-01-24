@@ -10,14 +10,18 @@
 
 (defn -main
   [& args]
-  (let [[spec-name input-name & {:strs [pprint] :or {pprint true}}] args
-        pprintval (boolean (Boolean/valueOf ^String pprint))]
+  (let [[spec-name input-name & {:strs [pprint timeout] :or {pprint "true"}}] args
+        opts {:pprint (boolean
+                        (Boolean/valueOf ^String pprint))
+              :timeout (try (Integer/valueOf ^String timeout)
+                            (catch Exception e nil))
+              :printonly true}]
     (use 'rulescript.lang.invocations)
     (use 'rulescript.lang.operations)
-    (rulescript-io/eval-from-files spec-name input-name :pprint pprintval :printonly true)))
+    (rulescript-io/eval-from-files opts spec-name input-name)))
 
 (comment
   (eval-from-files "./resources/drao" "./resources/drao" :pprint true :printonly false)
   (-main "./resources/drao" "./resources/drao" "pprint" "true")
-  (-main "./resources/drao" "./resources/drao" "pprint" "false"))
+  (-main "./resources/drao" "./resources/drao" "pprint" "true" "timeout" "1"))
 

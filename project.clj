@@ -1,4 +1,4 @@
-(defproject rulescript "0.6.0"
+(defproject rulescript "0.7.0"
   :description "Comprehensive DSL for document validation."
   :url "https://rulescript.org"
   :license {:name "MIT"

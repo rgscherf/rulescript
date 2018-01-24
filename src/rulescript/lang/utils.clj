@@ -15,7 +15,7 @@
     (string/join " ")
     string/trim))
 
-(defn- merge-ignore-nil
+(defn merge-ignore-nil
   [& maps]
   (apply merge-with
          (fn [a b]

@@ -100,7 +100,8 @@
                   (catch java.util.concurrent.ExecutionException e (if (= source :strings)
                                                                      (edn/read-string specname)
                                                                      (read-rulescript-file specname))))]
-    ((eval spec) input)))
+    @(future
+       ((eval spec) input))))
 
 (defn eval-rules
   [spec input & {:keys [pprint source]}]
@@ -114,9 +115,11 @@
   (eval-rules spec input :pprint pprint :source :strings))
 
 (defn eval-from-files
-  [spec input & {:keys [pprint]}]
-  (println
-    (eval-rules spec input :pprint pprint :source :files)))
+  [spec input & {:keys [pprint printonly] :or {pprint true printonly false}}]
+  (let [result (eval-rules spec input :pprint pprint :source :files)]
+    (if printonly
+      (println result)
+      result)))
 
 
 (comment
@@ -134,9 +137,9 @@
   (use 'rulescript.lang.operations)
   (let [spec (read-rulescript-file "./resources/drao")
         application (read-json-file "./resources/drao")]
-    ((eval spec) application))
-  (eval-from-files "./resources/drao" "./resources/drao" :pprint true)
-  (eval-from-strings
-    "(validate-document (inp) (rule i-fail (< 2 (in inp find fail))) (rule is-hello (= 1 (in inp find age))) (rule age-over-ten (> 10 (in inp find age))))"
-    "{\"age\":12}"
-    :pprint true))
+    (pprint-results ((eval spec) application)))
+   (eval-from-files "./resources/drao" "./resources/drao" :pprint true)
+   (eval-from-strings
+           "(validate-document (inp) (rule i-fail (< 2 (in inp find fail))) (rule is-hello (= 1 (in inp find age))) (rule age-over-ten (> 10 (in inp find age))))"
+           "{\"age\":12}"
+           :pprint true))

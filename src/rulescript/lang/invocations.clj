@@ -5,27 +5,8 @@
 (defn initialize-eval-env
   "Set up execution evironment for rule evaluation."
   []
-  (let [initial-ns *ns*]
-    (do
-      ;(remove-ns 'evalrules)
-      ;(create-ns 'evalrules)
-      ;(in-ns 'evalrules)
-      ;(use 'rs-site.rulescript.lang.invocations)
-      ;(use 'rs-site.rulescript.lang.operations)
-      (def env* (clojure.core/atom {:initial-ns initial-ns
-                                    :results    {}
-                                    :vars       {}})))))
-
-(defn return-to-calling-ns
-  "Remove current ns and return to initial evaluation ns."
-  []
-  (do
-    (let [environment# @env*]
-      (-> (:initial-ns @env*)
-          ns-name
-          in-ns)
-      (remove-ns 'evalrules)
-      environment#)))
+  (def env* (clojure.core/atom {:results {}
+                                :vars    {}})))
 
 (defmacro validate-document
   "Top-level macro for rolling up the result of all rule applications."

@@ -14,10 +14,10 @@
         pprintval (boolean (Boolean/valueOf ^String pprint))]
     (use 'rulescript.lang.invocations)
     (use 'rulescript.lang.operations)
-    (rulescript-io/eval-from-files spec-name input-name :pprint pprintval)))
+    (rulescript-io/eval-from-files spec-name input-name :pprint pprintval :printonly true)))
 
 (comment
-  (eval-from-files "./resources/drao" "./resources/drao" :pprint false)
+  (eval-from-files "./resources/drao" "./resources/drao" :pprint true :printonly false)
   (-main "./resources/drao" "./resources/drao" "pprint" "true")
   (-main "./resources/drao" "./resources/drao" "pprint" "false"))
 

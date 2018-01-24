@@ -132,6 +132,9 @@
 (comment
   (use 'rulescript.lang.invocations)
   (use 'rulescript.lang.operations)
+  (let [spec (read-rulescript-file "./resources/drao")
+        application (read-json-file "./resources/drao")]
+    ((eval spec) application))
   (eval-from-files "./resources/drao" "./resources/drao" :pprint true)
   (eval-from-strings
     "(validate-document (inp) (rule i-fail (< 2 (in inp find fail))) (rule is-hello (= 1 (in inp find age))) (rule age-over-ten (> 10 (in inp find age))))"

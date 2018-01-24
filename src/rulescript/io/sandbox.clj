@@ -12,7 +12,7 @@
                                                 "java.util.concurrent"
                                                 "java.awt"])
                    (testers/blacklist-symbols
-                     '#{alter-var-root intern
+                     '#{eval def alter-var-root intern
                         load-string load-reader addMethod ns-resolve resolve find-var
                         *read-eval* ns-publics ns-unmap set! ns-map ns-interns the-ns
                         push-thread-bindings pop-thread-bindings future-call agent send

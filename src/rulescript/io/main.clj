@@ -6,7 +6,7 @@
     [clojure.java.io :as io]
     [clojure.string :as string]
     [cheshire.core :as cheshire])
-  (:import (java.io PushbackReader)
+  (:import (java.io PushbackReader IOException)
            (java.text SimpleDateFormat)
            (java.util Date)
            (java.util.concurrent TimeoutException)))
@@ -109,7 +109,7 @@
 
 (defn- make-timeout
   [timeout-val]
-  (java.io.IOException.
+  (IOException.
     (str "Your specification took too long to evaluate (> "
          (double (/ timeout-val 1000))
          " seconds)")))

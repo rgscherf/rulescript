@@ -8,20 +8,20 @@ RuleScript lets you write policy specifications that are simple, unambiguous, an
 
 You write your rules in a simple computer language, point the rules an input document(s), and receive an instant, automatic answer about whether the input conforms to your rules.
 
-## Useage
+## Usage
 
 RuleScript can be used from the command line or as a Clojure library.
 
 ### Clojure library (recommended!)
 
-RuleScript is available on Clojars. Add it to your `project.clj` with `[rulescript "0.1.0]`.
+RuleScript is available on Clojars. Add it to your `project.clj` with `[rulescript "0.6.0"]`.
 
 The library provides two functions in `rulescript.core`: 
 
-- `eval-from-files`: takes paths to two file objects.
+- `eval-from-files`: takes paths to two files. In both cases, the input file should resolve to one "object", edn and json respectively.
 - `eval-from-strings`: takes two strings.
 
-In both cases, the eval fn evaluates an input document against a spec and returns the results either as a clojure map (rule names are keywordized keys) or a pprinted string (if the fn is called with `:pprint true`).
+In both cases, the eval fn evaluates an input document against a spec and returns the results either as a clojure map (rule names are keywordized keys) or a pprinted string (if the fn is called with `:pprint true` as a kwarg).
 
 ### Command line
 
@@ -39,9 +39,11 @@ Then, clone this repository and run:
 
 Then,
 
-`java -jar rulescript.jar input-spec input-document :pprint true`
+`java -jar rulescript.jar input-spec input-document`
 
-Results should be printed to the console.
+Without file extensions (.edn and .json respectively). Results should be printed to the console.
+
+You may also provide the optional boolean flag `pprint`, as in `pprint false`, to activate/deactivate pretty printing of results. Default is true. A `false` value returns results as a JSON-encoded string.
 
 ## Copyright
 

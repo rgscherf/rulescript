@@ -103,20 +103,20 @@
     ((eval spec) input)))
 
 (defn eval-rules
-  [spec input & {:keys [pprint source] :or {pprint true source :file}}]
+  [spec input & {:keys [pprint source]}]
   (let [output (eval-rules* spec input source)]
     (if pprint
       (pprint-results output)
       (cheshire/generate-string output))))
-
 
 (defn eval-from-strings
   [spec input & {:keys [pprint] :or {pprint true}}]
   (eval-rules spec input :pprint pprint :source :strings))
 
 (defn eval-from-files
-  [spec input & {:keys [pprint] :or {pprint true}}]
-  (eval-rules spec input :pprint pprint :source :files))
+  [spec input & {:keys [pprint]}]
+  (println
+    (eval-rules spec input :pprint pprint :source :files)))
 
 
 (comment
@@ -132,8 +132,8 @@
 (comment
   (use 'rulescript.lang.invocations)
   (use 'rulescript.lang.operations)
-  (eval-from-files "./resources/drao" "./resources/drao" :pprint true))
+  (eval-from-files "./resources/drao" "./resources/drao" :pprint true)
   (eval-from-strings
     "(validate-document (inp) (rule i-fail (< 2 (in inp find fail))) (rule is-hello (= 1 (in inp find age))) (rule age-over-ten (> 10 (in inp find age))))"
     "{\"age\":12}"
-    :pprint true)
+    :pprint true))

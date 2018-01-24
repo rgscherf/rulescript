@@ -1,3 +1,5 @@
+[![Clojars Project](https://img.shields.io/clojars/v/rulescript.svg)](https://clojars.org/rulescript)
+
 # RuleScript
 
 If you got here and you're not a software developer, check out the RuleScript website at https://rulescript.org.

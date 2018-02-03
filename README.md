@@ -1,5 +1,11 @@
 [![Clojars Project](https://img.shields.io/clojars/v/rulescript.svg)](https://clojars.org/rulescript)
 
+[![Build Status](https://travis-ci.org/rgscherf/rulescript.svg?branch=master)](https://travis-ci.org/rgscherf/rulescript)
+
+[![GitHub license](https://img.shields.io/github/license/Naereen/StrapDown.js.svg)](https://github.com/Naereen/StrapDown.js/blob/master/LICENSE)
+
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
+
 # RuleScript
 
 If you got here and you're not a software developer, check out the RuleScript website at https://rulescript.org.
@@ -16,7 +22,7 @@ RuleScript can be used from the command line or as a Clojure library.
 
 ### Clojure library (recommended!)
 
-RuleScript is available on Clojars. Add it to your `project.clj` with `[rulescript "0.6.0"]`.
+RuleScript is available on Clojars. Add it to your `project.clj` with [![Clojars Project](https://img.shields.io/clojars/v/rulescript.svg)](https://clojars.org/rulescript).
 
 The library provides two functions in `rulescript.core`: 
 

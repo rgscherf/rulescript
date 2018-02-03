@@ -1,9 +1,6 @@
-[![Clojars Project](https://img.shields.io/clojars/v/rulescript.svg)](https://clojars.org/rulescript)
-
+[![Clojars Project](https://img.shields.io/clojars/v/rulescript.svg)](https://clojars.org/rulescript) 
 [![Build Status](https://travis-ci.org/rgscherf/rulescript.svg?branch=master)](https://travis-ci.org/rgscherf/rulescript)
-
 [![GitHub license](https://img.shields.io/github/license/Naereen/StrapDown.js.svg)](https://github.com/Naereen/StrapDown.js/blob/master/LICENSE)
-
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
 
 # RuleScript

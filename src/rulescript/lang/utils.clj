@@ -2,6 +2,10 @@
   (:require [clojure.string :as string])
   (:import (java.io IOException)))
 
+(defn despace
+  [s]
+  (string/replace s #" " "-"))
+
 (defn symbol->keyword
   [symb]
   (-> symb str keyword))
@@ -10,10 +14,10 @@
   "Render a fn's name as a string."
   [name]
   (->>
-    (string/split name #"-")
-    (map string/capitalize)
-    (string/join " ")
-    string/trim))
+   (string/split name #"-")
+   (map string/capitalize)
+   (string/join " ")
+   string/trim))
 
 (defn merge-ignore-nil
   [& maps]
@@ -27,7 +31,6 @@
 (defn timeout-exception
   [timeout-val]
   (IOException.
-    (str "Your specification took too long to evaluate (> "
-         (double (/ timeout-val 1000))
-         " seconds)")))
-
+   (str "Your specification took too long to evaluate (> "
+        (double (/ timeout-val 1000))
+        " seconds)")))

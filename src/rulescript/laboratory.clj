@@ -7,10 +7,11 @@
             [cheshire.core :as cheshire]))
 
 (comment
+
   (eval-from-strings
-    "(validate-document (inp) (rule i-fail (< 2 (in inp find fail))) (rule is-hello (= 1 (in inp find age))) (rule age-over-ten (> 10 (in inp find age))))"
-    "{\"age\":12}"
-    :pprint true)
+   "(validate-document (inp) (rule i-fail (< 2 (in inp find fail))) (rule is-hello (= 1 (in inp find age))) (rule age-over-ten (> 10 (in inp find age))))"
+   "{\"age\":12}"
+   :pprint true)
 
   (defn book
     [title author overdue fines]
@@ -46,9 +47,7 @@
                            (book "Jampires"
                                  "David O'Connell and Sarah McIntyre"
                                  false
-                                 0)
-
-                           ]})
+                                 0)]})
 
   (def application
     (-> "drao.json"
@@ -62,11 +61,4 @@
         slurp
         edn/read-string))
 
-  ((eval spec) application)
-
-
-
-
-
-  )
-
+  ((eval spec) application))

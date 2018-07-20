@@ -4,10 +4,10 @@
             [rulescript.lang.invocations :as i]))
 
 (t/deftest init-env
-  (testing "New env vals are empty"
+  (t/testing "New env vals are empty"
     (t/is (every? #(= {} %)
                   (vals @env*))))
-  (testing "New env contains expected keys"
+  (t/testing "New env contains expected keys"
     (t/is (empty? (cset/difference
                    (-> @env* keys set)
                    #{:results :vars})))))
@@ -16,25 +16,25 @@
   (i/define-rule testrule
     [hello]
     (= hello "hello"))
-  (testing "Creates var at proper path"
-    (is (not= nil (get-in @env* [:vars :testrule]))))
-  (testing "Creates fn"
-    (is (function? (get-in @env* [:vars :testrule])))))
+  (t/testing "Creates var at proper path"
+    (t/is (not= nil (get-in @env* [:vars :testrule]))))
+  (t/testing "Creates fn"
+    (t/is (function? (get-in @env* [:vars :testrule])))))
 
 (t/deftest rule-test
   (i/rule two-is-two
           (= 2 2))
   (let [res (-> @env* :results)]
-    (testing "calling rule places named entry in results map"
-      (is (not= nil (:two-is-two res))))
-    (testing "calling rule creates map in results map"
-      (is (map? (:two-is-two res))))
-    (testing "calling rule creates properly-keyed map in results map"
+    (t/testing "calling rule places named entry in results map"
+      (t/is (not= nil (:two-is-two res))))
+    (t/testing "calling rule creates map in results map"
+      (t/is (map? (:two-is-two res))))
+    (t/testing "calling rule creates properly-keyed map in results map"
       (let [this-result (:two-is-two res)]
-        (is (= (-> this-result :rule)
-               :two-is-two))
-        (is (= (-> this-result :result)
-               :pass))))))
+        (t/is (= (-> this-result :rule)
+                 :two-is-two))
+        (t/is (= (-> this-result :result)
+                 :pass))))))
 
 (defn with-new-env
   "Wrap all tests with a call to initialize-eval-env."

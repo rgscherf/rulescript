@@ -21,7 +21,7 @@
   (t/testing "Creates var at proper path"
     (t/is (not= nil (get-in @env* [:vars :testrule]))))
   (t/testing "Creates fn"
-    (t/is (function? (get-in @env* [:vars :testrule])))))
+    (t/is (t/function? (get-in @env* [:vars :testrule])))))
 
 (t/deftest rule-test
   (i/rule two-is-two

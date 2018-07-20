@@ -44,10 +44,9 @@
                               (keyword (str ~rule-name "-" (-> ~config :tag despace)))
                               (symbol->keyword ~rule-name))]
       (try
-        (println ~config)
         (let [result# (if (map? ~eval-result)
                         (:result ~eval-result)
-                        (if  ~eval-result :pass :fail))]
+                        (if ~eval-result :pass :fail))]
           {:result result#
            :rule   tagged-rule-name#})
         (catch Exception e# {:result  :error
@@ -72,7 +71,6 @@
 ;; RULE APPLICATION
 ;;;;;;;;;;;;;;;;;;;
 
-
 (defmacro apply-rule*
   "Pass a rule and its expressions off to be tagged in env*"
   [application-fn config rule-name & expressions]
@@ -85,7 +83,6 @@
   `(let [eval-result# ((get-in (deref env*)
                                [:vars (symbol->keyword ~rule-name)])
                        ~@args)]
-     (println "apply-rule-inner result: " eval-result#)
      eval-result#))
 
 (defmacro apply-rule
@@ -97,13 +94,12 @@
   "Execute expressions."
   [rule-name & expressions]
   `(do
-     (println "I'm in rule-inner!")
      ~@expressions))
 
 (defmacro rule
   "Execute a rule anonymously without variable bindings."
   [rule-name & expressions]
-  `(apply-rule* rule-inner {:tag "hello"} '~rule-name ~@expressions))
+  `(apply-rule* rule-inner {} '~rule-name ~@expressions))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; PROMOTE/DEMOTE RESULTS TO WARNING

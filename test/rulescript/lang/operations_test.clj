@@ -74,8 +74,7 @@
       (is (= [nil nil]
              (in sequential extract b)))
       (is (= ["hi" "bye"]
-             (in sequential extract a))))
-    ))
+             (in sequential extract a))))))
 
 (deftest test-all-preds
   (testing "not"

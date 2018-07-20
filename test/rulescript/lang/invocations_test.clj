@@ -3,6 +3,8 @@
             [clojure.set :as cset]
             [rulescript.lang.invocations :as i]))
 
+(def env* (atom {}))
+
 (t/deftest init-env
   (t/testing "New env vals are empty"
     (t/is (every? #(= {} %)

@@ -3,15 +3,13 @@
             [clojure.set :as cset]
             [rulescript.lang.invocations :as i]))
 
-(def env* (atom {}))
-
 (t/deftest init-env
   (t/testing "New env vals are empty"
     (t/is (every? #(= {} %)
-                  (vals @env*))))
+                  (vals @i/env*))))
   (t/testing "New env contains expected keys"
     (t/is (empty? (cset/difference
-                   (-> @env* keys set)
+                   (-> @i/env* keys set)
                    #{:results :vars})))))
 
 (t/deftest define-rule-test
@@ -19,14 +17,14 @@
     [hello]
     (= hello "hello"))
   (t/testing "Creates var at proper path"
-    (t/is (not= nil (get-in @env* [:vars :testrule]))))
+    (t/is (not= nil (get-in @i/env* [:vars :testrule]))))
   (t/testing "Creates fn"
-    (t/is (t/function? (get-in @env* [:vars :testrule])))))
+    (t/is (t/function? (get-in @i/env* [:vars :testrule])))))
 
 (t/deftest rule-test
   (i/rule two-is-two
           (= 2 2))
-  (let [res (-> @env* :results)]
+  (let [res (-> @i/env* :results)]
     (t/testing "calling rule places named entry in results map"
       (t/is (not= nil (:two-is-two res))))
     (t/testing "calling rule creates map in results map"
@@ -42,7 +40,6 @@
   "Wrap all tests with a call to initialize-eval-env."
   [f]
   (i/initialize-eval-env)
-  (f)
-  (.unbindRoot #'env*))
+  (f))
 
 (t/use-fixtures :once with-new-env)

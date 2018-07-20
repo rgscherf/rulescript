@@ -12,3 +12,4 @@ pom.xml.asc
 .idea/*
 ..gitignore.un~
 *.iml
+*.swp

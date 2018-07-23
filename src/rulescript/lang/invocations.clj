@@ -118,14 +118,11 @@
   `(let [result-map# (eval ~rule-form)
          result-as-bool# (= :pass (:result result-map#))
          with-warning# (assoc result-map# :result :warn)]
-     (println ~warning-val result-as-bool#)
      (if (= ~warning-val result-as-bool#)
        (do
-         (println "changing to warn")
          (change-result! (:rule result-map#) with-warning#)
          with-warning#)
        (do
-         (println "not warning")
          result-map#))))
 
 (comment
@@ -142,3 +139,19 @@
   (macroexpand '(addition))
 
   "end comment")
+
+(comment
+  (use 'rulescript.lang.operations)
+
+  (in {:age 10} find age)
+
+  ((validate-document (inp)
+                      (rule i-fail
+                            (< 2 (in inp find age)))
+                      (rule is-hello
+                            (= 1 (in inp find age)))
+                      (rule age-over-ten
+                            (> 10 (in inp find age))))
+   {:age 10})
+
+  "end")

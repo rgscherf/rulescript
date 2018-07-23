@@ -1,16 +1,15 @@
 (ns rulescript.io.main
   (:require
-    [rulescript.io.sandbox :as sandbox]
-    [rulescript.lang.utils :refer :all]
-    [clojure.edn :as edn]
-    [clojure.java.io :as io]
-    [clojure.string :as string]
-    [cheshire.core :as cheshire])
+   [rulescript.io.sandbox :as sandbox]
+   [rulescript.lang.utils :refer :all]
+   [clojure.edn :as edn]
+   [clojure.java.io :as io]
+   [clojure.string :as string]
+   [cheshire.core :as cheshire])
   (:import (java.io PushbackReader)
            (java.text SimpleDateFormat)
            (java.util Date)
            (java.util.concurrent TimeoutException ExecutionException)))
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; PRETTY PRINTING RESULTS AS STRING
@@ -20,17 +19,17 @@
   [[class-seq label]]
   (if class-seq
     (apply
-      (partial str
-               "=======\n"
-               label
-               "\n"
-               "=======\n")
-      (map #(-> %
-                :rule
-                name
-                stringify-fn
-                (str "\n"))
-           class-seq))))
+     (partial str
+              "=======\n"
+              label
+              "\n"
+              "=======\n")
+     (map #(-> %
+               :rule
+               name
+               stringify-fn
+               (str "\n"))
+          class-seq))))
 
 (defn- add-timestamp
   "Add datestamp to a string."
@@ -55,7 +54,6 @@
          add-timestamp
          string/trimr)))
 
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; DEFAULT EVALUATION OPTIONS
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -64,7 +62,6 @@
   {:pprint    true
    :timeout   5000
    :printonly false})
-
 
 ;;;;;;;;;
 ;; IO OPS
@@ -92,7 +89,6 @@
     (with-open [in (PushbackReader. spec-resource)]
       (edn/read {:eof :eof} in))))
 
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; EVALUATING RULESCRIPTS
 ;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -117,11 +113,11 @@
   "Outer evaluation, controlling eval timeout and printing of results."
   [{:keys [pprint timeout] :as opts} spec input]
   (let [output (deref
-                 (future
-                   (eval-rules* opts spec input))
-                 timeout
-                 :too-long)]
-    (if (= output :too-long) (throw (timeout-exception timeout)))
+                (future (eval-rules* opts spec input))
+                timeout
+                :too-long)]
+    (if (= output :too-long)
+      (throw (timeout-exception timeout)))
     (if pprint
       (pprint-results output)
       (cheshire/generate-string output))))
@@ -131,7 +127,9 @@
   ([spec input]
    (eval-from-strings {} spec input))
   ([opts spec input]
-   (eval-rules (merge-ignore-nil default-opts opts {:source :strings})
+   (eval-rules (merge-ignore-nil default-opts
+                                 opts
+                                 {:source :strings})
                spec
                input)))
 
@@ -146,10 +144,9 @@
        (println result)
        result))))
 
-
 (comment
   (let [testgroup {:age-over-ten      {:rule :age-over-ten, :result :fail}
-                   :i-fail            {:rule :i-fail, :result :error, :message nil},
+                   :i-fail            {:rule :i-fail, :result :error, :message nil}
                    :age-under-fifteen {:rule :age-under-fifteen, :result :pass}
                    :is-a-dog          {:rule :is-a-dog, :result :fail}
                    :lives-in-toronto  {:rule :lives-in-toronto, :result :warn}
@@ -158,13 +155,18 @@
     (pprint-results testgroup)))
 
 (comment
+
   (use 'rulescript.lang.invocations)
   (use 'rulescript.lang.operations)
+
   (let [spec (read-rulescript-file "./resources/drao")
         application (read-json-file "./resources/drao")]
     (pprint-results ((eval spec) application)))
-  (eval-from-files "./resources/drao" "./resources/drao")
+
+  (eval-from-files {:printonly true} "./resources/drao" "./resources/drao")
+
+  (sandbox/rs-sandbox (read-rulescript-file "./resources/drao"))
+
   (eval-from-strings
-    "(validate-document (inp) (rule i-fail (< 2 (in inp find fail))) (rule is-hello (= 1 (in inp find age))) (rule age-over-ten (> 10 (in inp find age))))"
-    "{\"age\":12}"
-    ))
+   "(validate-document (inp) (rule i-fail (< 2 (in inp find age))) (rule is-hello (= 1 (in inp find age))) (rule age-over-ten (> 10 (in inp find age))))"
+   "{\"age\":12}"))

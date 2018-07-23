@@ -103,27 +103,30 @@
 ;; PROMOTE/DEMOTE RESULTS TO WARNING
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn change-result!
+(defmacro change-result!
   "Change an entry in the :results map of env*"
   [rule-name-kw new-map]
-  (swap!
-   ~'env*
-   assoc-in
-   [:results rule-name-kw]
-   new-map))
+  `(swap!
+    ~'env*
+    assoc-in
+    [:results ~rule-name-kw]
+    ~new-map))
 
-(defn warn-when
+(defmacro warn-when
   "If the change a result map's :result to :warn if it matches a given value."
-  [warning-val {:keys [rule result] :as result-map}]
-  (let [result-as-bool (= :pass result)
-        with-warning (assoc result-map :result :warn)]
-    (if (= warning-val result-as-bool)
-      (do
-        (try
-          (change-result! rule with-warning)
-          (catch ClassCastException e (println (.getMessage e))))
-        with-warning)
-      result-map)))
+  [warning-val rule-form]
+  `(let [result-map# (eval ~rule-form)
+         result-as-bool# (= :pass (:result result-map#))
+         with-warning# (assoc result-map# :result :warn)]
+     (println ~warning-val result-as-bool#)
+     (if (= ~warning-val result-as-bool#)
+       (do
+         (println "changing to warn")
+         (change-result! (:rule result-map#) with-warning#)
+         with-warning#)
+       (do
+         (println "not warning")
+         result-map#))))
 
 (comment
   ;; capturing lexically-scoped values in a macro

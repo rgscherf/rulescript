@@ -63,3 +63,13 @@
         (is (= (-> results :testme-failing :result) :fail)))
       (testing "passing key is result pass"
         (is (= (-> results :testme-passing :result) :pass))))))
+
+(deftest warn-when-test
+  (let [env* (i/initialize-eval-env*)]
+    (i/warn-when
+     true
+     (i/rule should-be-true
+             (= 1 1)))
+    (let [results (-> @env* :results)]
+      (testing "pass converted to warn"
+        (is (= (-> results :should-be-true :result) :warn))))))

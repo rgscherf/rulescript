@@ -2,21 +2,26 @@
   (:require
    [rulescript.lang.utils :refer :all]))
 
-(defn initialize-eval-env
-  "Set up execution evironment for rule evaluation."
+#_(defn initialize-eval-env
+    "Set up execution evironment for rule evaluation."
+    []
+    (def env* (clojure.core/atom {:results {}
+                                  :vars    {}})))
+
+(defn initialize-eval-env*
   []
-  (def env* (clojure.core/atom {:results {}
-                                :vars    {}})))
+  (clojure.core/atom {:results {}
+                      :vars {}}))
 
 (defmacro validate-document
   "Top-level macro for rolling up the result of all rule applications."
   [[& inputs] & expressions]
   `(fn
      [~@inputs]
-     (initialize-eval-env)
-     ~@expressions
-     (let [res# (:results @env*)]
-       res#)))
+     (let [~'env* (initialize-eval-env*)]
+       ~@expressions
+       (let [res# (:results (deref ~'env*))]
+         res#))))
 
 ;;;;;;;;;;;;;;;;;
 ;; Wrapping rules (which usually produce predicates)
@@ -30,7 +35,7 @@
 (defmacro log-application-result!
   "Associate the result of an application in the :results map of env*."
   [result-map]
-  `(do (swap! env*
+  `(do (swap! ~'env*
               assoc-in
               [:results (:rule ~result-map)]
               ~result-map)
@@ -60,7 +65,7 @@
 (defmacro define-rule
   "Define a rule. Rules are closures expecting the arguments from arglist."
   [rule-name arglist & expressions]
-  `(swap! env*
+  `(swap! ~'env*
           assoc-in
           [:vars (symbol->keyword '~rule-name)]
           (fn
@@ -80,7 +85,7 @@
 (defmacro apply-rule-inner
   "Get a fn by rule-name from the vars map, and apply it to args"
   [rule-name & args]
-  `(let [eval-result# ((get-in (deref env*)
+  `(let [eval-result# ((get-in (deref ~'env*)
                                [:vars (symbol->keyword ~rule-name)])
                        ~@args)]
      eval-result#))
@@ -109,7 +114,7 @@
   "Change an entry in the :results map of env*"
   [rule-name-kw new-map]
   (swap!
-   env*
+   ~'env*
    assoc-in
    [:results rule-name-kw]
    new-map))

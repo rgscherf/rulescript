@@ -68,8 +68,14 @@
   (let [env* (i/initialize-eval-env*)]
     (i/warn-when
      true
-     (i/rule should-be-true
+     (i/rule should-pass
              (= 1 1)))
+    (i/warn-when
+     true
+     (i/rule should-fail
+             (= 1 2)))
     (let [results (-> @env* :results)]
-      (testing "pass converted to warn"
-        (is (= (-> results :should-be-true :result) :warn))))))
+      (testing "match converted to warn"
+        (is (= (-> results :should-pass :result) :warn)))
+      (testing "not match stays original result"
+        (is (= (-> results :should-fail :result) :fail))))))

@@ -3,7 +3,7 @@
             [clojure.test :refer :all]
             [rulescript.lang.invocations :as i]))
 
-(deftest init-env
+(deftest init-env-test
   (let [env* (i/initialize-eval-env*)]
     (testing "New env vals are empty"
       (is (every? #(= {} %)
@@ -38,3 +38,28 @@
                  :two-is-two))
           (is (= (-> this-result :result)
                  :pass)))))))
+
+(deftest apply-rule-test
+  (let [env* (i/initialize-eval-env*)]
+    (i/define-rule testme
+      [hello]
+      (= hello "hello"))
+    (i/apply-rule
+     testme
+     "failing"
+     "goodbye")
+    (i/apply-rule
+     testme
+     "failing"
+     "what time is it?")
+    (i/apply-rule
+     testme
+     "passing"
+     "hello")
+    (let [results (-> @env* :results)]
+      (testing "duplicate tags overwrite results"
+        (is (= (-> results keys count) 2)))
+      (testing "failing key is result fail"
+        (is (= (-> results :testme-failing :result) :fail)))
+      (testing "passing key is result pass"
+        (is (= (-> results :testme-passing :result) :pass))))))

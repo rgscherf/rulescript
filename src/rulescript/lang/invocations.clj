@@ -2,12 +2,6 @@
   (:require
    [rulescript.lang.utils :refer :all]))
 
-#_(defn initialize-eval-env
-    "Set up execution evironment for rule evaluation."
-    []
-    (def env* (clojure.core/atom {:results {}
-                                  :vars    {}})))
-
 (defn initialize-eval-env*
   []
   (clojure.core/atom {:results {}
@@ -26,11 +20,10 @@
 ;;;;;;;;;;;;;;;;;
 ;; Wrapping rules (which usually produce predicates)
 ;; with structured return information.
+;; after tagging, each rule application should return a result of shape 
+;; {:result (:pass | :fail | :warn | :error)
+;;  :rule   "rule name"  
 ;;;;;;;;;;;;;;;;;
-
-#_(after tagging, each rule application should return a result of shape
-         {:result (:pass | :fail | :warn | :error)
-          :rule   "rule name"})
 
 (defmacro log-application-result!
   "Associate the result of an application in the :results map of env*."
@@ -45,7 +38,7 @@
   "Wrap the application of a rule with structured rule output."
   [config rule-name eval-result]
   `(log-application-result!
-    (let [tagged-rule-name# (if  (:tag ~config)
+    (let [tagged-rule-name# (if (:tag ~config)
                               (keyword (str ~rule-name "-" (-> ~config :tag despace)))
                               (symbol->keyword ~rule-name))]
       (try

@@ -2,6 +2,7 @@
   (:require
    [rulescript.io.sandbox :as sandbox]
    [rulescript.lang.utils :refer :all]
+   [rulescript.io.error-catalogue :as errors]
    [clojure.edn :as edn]
    [clojure.java.io :as io]
    [clojure.string :as string]
@@ -93,53 +94,65 @@
 ;; EVALUATING RULESCRIPTS
 ;;;;;;;;;;;;;;;;;;;;;;;;;
 
+
 (defn- eval-rules*
   "Evaluate a rulescript spec and input. Source is either :string or :file.
   Disallows certain symbols, defined in ns rulescript.io.sandbox"
-  [{:keys [source]} specname inputname]
-  (let [input (if (= source :strings)
-                (cheshire/parse-string inputname true)
-                (read-json-file inputname))
+  [{:keys [source]} specname & inputnames]
+  (let [inputs (map (if (= source :strings)
+                      #(cheshire/parse-string % true)
+                      read-json-file)
+                    inputnames)
         spec (try (sandbox/rs-sandbox (if (= source :strings)
                                         (edn/read-string specname)
                                         (read-rulescript-file specname)))
-                  (catch SecurityException e (throw e))
+                  (catch SecurityException e (errors/throw-ex-info :forbidden-symbol e))
                   (catch ExecutionException e (if (= source :strings)
                                                 (edn/read-string specname)
                                                 (read-rulescript-file specname))))]
-    ((eval spec) input)))
+    (try
+      (apply (eval spec) inputs)
+      (catch clojure.lang.ArityException e (errors/throw-ex-info :spec-arity e)))))
+
+(defn print-error
+  [pprint error]
+  (let [err-string (errors/pprint-error error)]
+    (if pprint
+      (println err-string)
+      (cheshire/generate-string err-string))))
 
 (defn- eval-rules
   "Outer evaluation, controlling eval timeout and printing of results."
-  [{:keys [pprint timeout] :as opts} spec input]
-  (let [output (deref
-                (future (eval-rules* opts spec input))
-                timeout
-                :too-long)]
-    (if (= output :too-long)
-      (throw (timeout-exception timeout)))
-    (if pprint
-      (pprint-results output)
-      (cheshire/generate-string output))))
+  [{:keys [pprint timeout] :as opts} spec & inputs]
+  (try
+    (let [output (deref
+                  (future (apply eval-rules* opts spec inputs))
+                  timeout
+                  :too-long)]
+      (if (= output :too-long)
+        (errors/throw-ex-info :evaluation-timeout timeout))
+      (if pprint
+        (pprint-results output)
+        (cheshire/generate-string output)))
+    (catch clojure.lang.ExceptionInfo e
+      (print-error pprint e))
+    (catch java.util.concurrent.ExecutionException e
+      (print-error pprint (.getCause e)))))
 
 (defn eval-from-strings
   "Evaluate RuleScript with string inputs. Can take an option map as first argument. See default-opts in this NS."
-  ([spec input]
-   (eval-from-strings {} spec input))
-  ([opts spec input]
-   (eval-rules (merge-ignore-nil default-opts
-                                 opts
-                                 {:source :strings})
-               spec
-               input)))
+  ([opts spec & inputs]
+   (apply eval-rules (merge-ignore-nil default-opts
+                                       opts
+                                       {:source :strings})
+          spec
+          inputs)))
 
 (defn eval-from-files
   "Evaluate RuleScript with file path inputs. Can take an option map as first argument. See default-opts in this NS."
-  ([spec input]
-   (eval-from-files {} spec input))
-  ([opts spec input]
+  ([opts spec & inputs]
    (let [eval-opts (merge-ignore-nil default-opts opts {:source :files})
-         result (eval-rules eval-opts spec input)]
+         result (apply eval-rules eval-opts spec inputs)]
      (if (:printonly opts)
        (println result)
        result))))
@@ -168,5 +181,7 @@
   (sandbox/rs-sandbox (read-rulescript-file "./resources/drao"))
 
   (eval-from-strings
-   "(validate-document (inp) (rule i-fail (< 2 (in inp find age))) (rule is-hello (= 1 (in inp find age))) (rule age-over-ten (> 10 (in inp find age))))"
-   "{\"age\":12}"))
+   {}
+   "(validate-document (inp) (rule i-fail (< 2 (in inp find age))) (rule is-hello (= 1 (in inp find age))) #_(rule second-age-under-two (> 3 (in seco find secondage))))"
+   "{\"age\":12}"
+   "{\"secondage\":12}"))

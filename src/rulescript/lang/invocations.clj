@@ -126,3 +126,18 @@
           (catch ClassCastException e (println (.getMessage e))))
         with-warning)
       result-map)))
+
+(comment
+  ;; capturing lexically-scoped values in a macro
+  ;; see https://stackoverflow.com/questions/33471659/how-to-capture-in-lexical-scope-in-a-clojure-macro
+  ;; can't use bare symbol. Have to quote and then eval the quoted symbol: ~'sym
+
+  (defmacro addition []
+    `(+ 1 ~'macro-val))
+
+  (let [macro-val 1]
+    (addition))
+
+  (macroexpand '(addition))
+
+  "end comment")

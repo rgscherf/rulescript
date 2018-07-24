@@ -87,9 +87,9 @@
        (do
          (s/assert ::result-map result-map#)
          result-map#)
-       (catch clojure.lang.ExceptionInfo e
+       (catch clojure.lang.ExceptionInfo e#
          (errors/throw-ex-info :result-map-nonconform {:rule-name ~rule-name
-                                                       :ex-info (ex-data e)})))))
+                                                       :ex-info (ex-data e#)})))))
 
 (defmacro apply-rule-inner
   "Get a fn by rule-name from the vars map, and apply it to args"

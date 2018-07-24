@@ -1,6 +1,15 @@
 (ns rulescript.lang.invocations
-  (:require
-   [rulescript.lang.utils :refer :all]))
+  (:require [clojure.spec.alpha :as s]
+            [rulescript.io.error-catalogue :as errors]
+            [rulescript.lang.utils :refer :all]))
+
+(s/check-asserts true)
+
+(s/def ::result-map (s/keys :req-un [::result ::rule]
+                            :opt-un [::message]))
+(s/def ::result #{:pass :fail :warn :error})
+(s/def ::rule keyword?)
+(s/def ::message string?)
 
 (defn initialize-eval-env*
   []
@@ -72,8 +81,15 @@
 (defmacro apply-rule*
   "Pass a rule and its expressions off to be tagged in env*"
   [application-fn config rule-name & expressions]
-  `(let [evaluated# (~application-fn ~rule-name ~@expressions)]
-     (application->result-map ~config ~rule-name evaluated#)))
+  `(let [evaluated# (~application-fn ~rule-name ~@expressions)
+         result-map# (application->result-map ~config ~rule-name evaluated#)]
+     (try
+       (do
+         (s/assert ::result-map result-map#)
+         result-map#)
+       (catch clojure.lang.ExceptionInfo e
+         (errors/throw-ex-info :result-map-nonconform {:rule-name ~rule-name
+                                                       :ex-info (ex-data e)})))))
 
 (defmacro apply-rule-inner
   "Get a fn by rule-name from the vars map, and apply it to args"

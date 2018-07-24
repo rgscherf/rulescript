@@ -9,6 +9,11 @@
    (fn [timeout] {:cause "Your spec took too long to evaluate."
                   :error (str "Execution took longer than current timeout value (" timeout " miliseconds)")
                   :remedy "RuleScript automatically stops spec execution after a certain amount of time. This should be more than long enough to evaluate any normal spec. It's likely that you (1) caused an infinite loop or (2) triggered an extremely long-running calculation. Review your spec and try again. If you require a longer execution timeout and are using RuleScript from Clojure or the command line, explore documentation related to the :timeout keyword argument."})
+   :result-map-nonconform
+   (fn [{:keys [rule-name ex-info]}]
+     {:cause (str "Something went wrong while evaluating rule " rule-name)
+      :remedy (str "Rule " rule-name " may be malformed. Check its spec and try again. The detailed information below may also help you track down the problem.")
+      :erorr ex-info})
    :forbidden-symbol
    (fn [e] {:cause "Your spec used a forbidden word."
             :error (.getMessage e)
